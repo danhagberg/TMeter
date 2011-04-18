@@ -7,13 +7,50 @@
 	<name>TMeter</name>
 	<description>Timer utility to track elapsed time within java programs.</description>
 	<url>http://www.digitaltsunami.net/projects/tmeter/site</url>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<profiles>
+		<profile>
+			<id>release-sign-artifacts</id>
+			<activation>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.1</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<scm>
-		<connection>scm:git:file://Volumes/Data/development/Workspaces/TProbe</connection>
-		<developerConnection>scm:git:file://Volumes/Data/development/Workspaces/TProbe</developerConnection>
-		<url>scm:git:file://Volumes/Data/development/Workspaces/TProbe</url>
+		<connection>scm:git:git://github.com/danhagberg/TMeter</connection>
+		<developerConnection>scm:git:git://github.com/danhagberg/TMeter</developerConnection>
+		<url>scm:git:git://github.com/danhagberg/TMeter.git</url>
 	</scm>
 	<dependencies>
 		<dependency>
@@ -84,7 +121,6 @@
 							<version>1.0-alpha-3</version>
 						</plugin>
 					</reportPlugins>
-
 				</configuration>
 			</plugin>
 			<plugin>
