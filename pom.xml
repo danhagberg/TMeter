@@ -47,8 +47,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<scm>
-		<connection>scm:git:git://github.com/danhagberg/TMeter</connection>
-		<developerConnection>scm:git:git://github.com/danhagberg/TMeter</developerConnection>
+		<connection>scm:git:git://github.com/danhagberg/TMeter.git</connection>
+		<developerConnection>scm:git:git@github.com:danhagberg/TMeter.git</developerConnection>
 		<url>scm:git:git://github.com/danhagberg/TMeter.git</url>
 	</scm>
 	<dependencies>
