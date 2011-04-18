@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.digitaltsunami</groupId>
 	<artifactId>TMeter</artifactId>
-	<version>0.1</version>
+	<version>0.2-SNAPSHOT</version>
 	<name>TMeter</name>
 	<description>Timer utility to track elapsed time within java programs.</description>
 	<url>http://www.digitaltsunami.net/projects/tmeter/site</url>
