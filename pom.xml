@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.digitaltsunami</groupId>
 	<artifactId>TMeter</artifactId>
-	<version>0.1</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<name>TMeter</name>
 	<description>Timer utility to track elapsed time within java programs.</description>
 	<url>http://www.digitaltsunami.net/projects/tmeter/site</url>
@@ -48,10 +48,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<scm>
-	<!--
 		<connection>scm:git:git://github.com/danhagberg/TMeter.git</connection>
-		  -->
-		<connection>scm:git:git@github.com:danhagberg/TMeter.git</connection>
 		<developerConnection>scm:git:git@github.com:danhagberg/TMeter.git</developerConnection>
 		<url>https://github.com/danhagberg/tmeter</url>
 	</scm>
