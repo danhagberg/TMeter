@@ -1,11 +1,18 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.digitaltsunami</groupId>
-	<artifactId>TMeter</artifactId>
+	<artifactId>tmeter</artifactId>
 	<version>0.2-SNAPSHOT</version>
 	<name>TMeter</name>
 	<description>Timer utility to track elapsed time within java programs.</description>
 	<url>http://www.digitaltsunami.net/projects/tmeter/site</url>
+	<packaging>jar</packaging>
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
@@ -47,10 +54,17 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<scm>
-		<connection>scm:git:git://github.com/danhagberg/TMeter.git</connection>
+		<connection>scm:git:git@github.com:danhagberg/TMeter.git</connection>
 		<developerConnection>scm:git:git@github.com:danhagberg/TMeter.git</developerConnection>
-		<url>https://github.com/danhagberg/tmeter</url>
+		<url>scm:git:git@github.com:danhagberg/TMeter.git</url>
 	</scm>
+	<developers>
+		<developer>
+			<id>dhagberg</id>
+			<name>Dan Hagberg</name>
+			<email>sweep@digitaltsunami.net</email>
+		</developer>
+	</developers>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -61,11 +75,6 @@
 		</dependency>
 	</dependencies>
 	<distributionManagement>
-		<repository>
-			<id>digitaltsunami-net-tmeter-repo</id>
-			<name>tmeter-repo</name>
-			<url>scpexe://digitaltsunami.net/home/dhagberg/public_html/projects/tmeter/repository</url>
-		</repository>
 		<site>
 			<id>www.digitaltsunami.net</id>
 			<url>scpexe://digitaltsunami.net/home/dhagberg/public_html/projects/tmeter/site</url>
@@ -144,6 +153,32 @@
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.1.2</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.7</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
