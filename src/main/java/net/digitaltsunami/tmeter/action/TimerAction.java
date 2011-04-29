@@ -73,11 +73,11 @@ public abstract class TimerAction {
 
     /**
      * Perform any processing specific to the action for reset. This method will
-     * be invoked when to reset the state of the action and may indicate that a
+     * be invoked to reset the state of the action and may indicate that a
      * new timing run is starting.
      * <p>
      * Concrete classes should override this method if they accumulate timer
-     * data that is specific to given run. The default is to do nothing. timers.
+     * data that is specific to a given run. The default is to do nothing. 
      */
     protected void reset() {
         // No action
@@ -86,7 +86,7 @@ public abstract class TimerAction {
     /**
      * Drives the reset processing for all {@link TimerAction} instances.
      */
-    public void resetState() {
+    public final void resetState() {
         reset();
         if (nextAction != null) {
             nextAction.reset();

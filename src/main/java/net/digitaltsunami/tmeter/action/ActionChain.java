@@ -22,6 +22,28 @@ import java.util.concurrent.LinkedBlockingQueue;
 import net.digitaltsunami.tmeter.Timer;
 import net.digitaltsunami.tmeter.TimerShell;
 
+/**
+ * Maintains and controls chain of {@link TimerAction} instances used to perform
+ * post completion processing of {@link Timer} instances.
+ * <p>
+ * All processing is handled on a separate thread to minimize the impact to the
+ * timed processing thread.
+ * <p>
+ * Each timer is processed by each {@link TimerAction} in a chain, but the order
+ * is is not guaranteed.
+ * <p>
+ * Processing of {@link TimerAction}s can be stopped by clearing the action list
+ * using {@link #clearActions()}. This will remove the chain of
+ * {@link ActionChain} instances, but elements currently being processed will
+ * continue.
+ * <p>
+ * If any of the {@link TimerAction}s in the chain maintain state (e.g.,
+ * counts), these can be reset by invoking {@link ActionChain#reset()}. This
+ * will cause each action in the chain to invoke {@link TimerAction#reset()}
+ * 
+ * @author dhagberg
+ * 
+ */
 public class ActionChain {
 
     /**
@@ -60,7 +82,7 @@ public class ActionChain {
             tempRoot.resetState();
         }
     }
-    
+
     /**
      * Clear the timer action chain.
      */
