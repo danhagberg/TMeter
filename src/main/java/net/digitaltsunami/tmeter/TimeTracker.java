@@ -114,7 +114,7 @@ public class TimeTracker {
     private static ActionChain actionChain;
 
     /**
-     * Listener for {@link TimerStoppedEvent}. Will drive any confiugured
+     * Listener for {@link TimerStoppedEvent}. Will drive any configured
      * completion processing.
      */
     private static final TimerStoppedEventHandler completionEventListener =
@@ -332,7 +332,7 @@ public class TimeTracker {
      * prior to the first invocation.
      * 
      * @param out
-     *            PrintStream to which timer output will be written logging is
+     *            PrintStream to which timer output will be written if logging is
      *            set to log upon stop.
      * @see #setLogType(TimerLogType)
      * @see Timer#setOut(PrintStream)

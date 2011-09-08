@@ -30,7 +30,7 @@ import net.digitaltsunami.tmeter.TimerShell;
  * timed processing thread.
  * <p>
  * Each timer is processed by each {@link TimerAction} in a chain, but the order
- * is is not guaranteed.
+ * is not guaranteed.
  * <p>
  * Processing of {@link TimerAction}s can be stopped by clearing the action list
  * using {@link #clearActions()}. This will remove the chain of

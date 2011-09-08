@@ -1,0 +1,5 @@
+start_time_ms,task,thread,elapsed_ms,elapsed_ns,concurrent,notes
+1307231225880,LoadDictionary,main,235,235514000,0,,
+1307231226116,Query,main,5,  5000000,0,,
+1307231226117,Query,main,10,10000000,0,,
+1307231226118,Query,main,15,15000000,0,,

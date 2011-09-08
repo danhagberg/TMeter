@@ -18,10 +18,11 @@ __copyright_end__ */
  */
 package net.digitaltsunami.tmeter.action;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.Collection;
-import java.util.Set;
 
 import net.digitaltsunami.tmeter.Timer;
 import net.digitaltsunami.tmeter.TimerBasicStatistics;

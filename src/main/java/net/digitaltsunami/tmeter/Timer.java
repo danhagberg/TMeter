@@ -16,7 +16,10 @@ __copyright_end__ */
 package net.digitaltsunami.tmeter;
 
 import java.io.PrintStream;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import net.digitaltsunami.tmeter.action.ActionChain;
 import net.digitaltsunami.tmeter.event.TimerStoppedEvent;
@@ -103,7 +106,9 @@ import net.digitaltsunami.tmeter.event.TimerStoppedListener;
  * @author dhagberg
  * 
  */
-public class Timer {
+public class Timer implements Serializable {
+    
+    private static final long serialVersionUID = -7476041689241631462L;
     /**
      * The name of the task for which the time is being recorded.
      */
@@ -154,10 +159,10 @@ public class Timer {
     private final String threadName;
 
     /**
-     * Optional array of domain specific objects provided by user. These will be
+     * Optional list of domain specific objects provided by user. These will be
      * displayed if provided.
      */
-    private Object[] notes;
+    private TimerNotes notes;
 
     /**
      * If the timer should be written to an output stream other than stdout, it
@@ -166,9 +171,9 @@ public class Timer {
     private volatile static PrintStream out = System.out;
 
     /**
-	 * 
+	 * Listener to notify when this timer is stopped.
 	 */
-    private TimerStoppedListener completionListener;
+    private transient TimerStoppedListener completionListener;
 
     /**
      * Construct an instance of Timer for the given task and start the timer.
@@ -195,6 +200,18 @@ public class Timer {
         if (!delayStart) {
             start();
         }
+    }
+
+    /**
+     * Used by internal method constructing object from CSV file.
+     * 
+     * @param taskName
+     * @param threadName
+     */
+    private Timer(String taskName, String threadName) {
+        this.taskName = taskName;
+        this.threadName = threadName;
+        this.logType = TimerLogType.NONE;
     }
 
     /**
@@ -235,6 +252,94 @@ public class Timer {
     }
 
     /**
+     * Stop the current time recording. Timer must be running and can be stopped
+     * one time only. If stopped multiple times,only the first will be recorded.
+     * <p>
+     * The timer entering the stopped state triggers the optional reporting
+     * processing such as logging and firing
+     * {@link TimerStoppedListener#timerStopped(TimerStoppedEvent)}
+     * <p>
+     * This overload of the stop method allows the notes to be placed on the
+     * timer for inclusion in post processing and/or logging fired from this
+     * action.
+     * <p>
+     * The notes are provided via the array of domain specific objects. These
+     * values, if provided, will be displayed with the other timer values. As
+     * all objects are stored as {@link Object}, any primitive passed in will be
+     * auto boxed.
+     * <p>
+     * <strong>Note:</strong> Adding of notes incurs a cost due to auto boxing
+     * of primitives and array creation for the variable arguments parameter.
+     * This cost should be small, but for recording of very small intervals,
+     * this could affect the measurements. If the notes are not needed for post
+     * processing/logging, adding of notes should be done using
+     * {@link #setNotes(Object...)}.
+     * <p>
+     * <strong>Note:</strong> This method will overwrite any current notes
+     * already present.
+     * 
+     * @param notes
+     *            List of domain specific values to store with the timer.
+     * @return the elapsed time in nanoseconds.
+     */
+    public long stop(Object... notes) {
+        return stop(false, notes);
+    }
+
+    /**
+     * Stop the current time recording. Timer must be running and can be stopped
+     * one time only. If stopped multiple times,only the first will be recorded.
+     * <p>
+     * The timer entering the stopped state triggers the optional reporting
+     * processing such as logging and firing
+     * {@link TimerStoppedListener#timerStopped(TimerStoppedEvent)}
+     * <p>
+     * This overload of the stop method allows the notes to be placed on the
+     * timer for inclusion in post processing and/or logging fired from this
+     * action.
+     * <p>
+     * The notes are provided via the array of domain specific objects. These
+     * values, if provided, will be displayed with the other timer values. As
+     * all objects are stored as {@link Object}, any primitive passed in will be
+     * auto boxed.
+     * <p>
+     * <strong>Note:</strong> Adding of notes incurs a cost due to auto boxing
+     * of primitives and array creation for the variable arguments parameter.
+     * This cost should be small, but for recording of very small intervals,
+     * this could affect the measurements. If the notes are not needed for post
+     * processing/logging, adding of notes should be done using
+     * {@link #setNotes(Object...)}.
+     * <p>
+     * <strong>Note:</strong> This method will overwrite any current notes
+     * already present.
+     * 
+     * @param keyed
+     *            true if notes are provided as key/value pairs (e.g.
+     *            key1,val1,key2,val2...), false if all notes are values (e.g.,
+     *            val1,val2,val3...).
+     * @param notes
+     *            list of either key/value pairs or values.
+     * 
+     * @return the elapsed time in nanoseconds.
+     */
+    public long stop(boolean keyed, Object... notes) {
+        if (status == TimerStatus.RUNNING) {
+            stopTimeNanos = System.nanoTime();
+            status = TimerStatus.STOPPED;
+            this.notes = new TimerNotes(keyed, notes);
+            if (logType.isLoggingEnabled()) {
+                logTimer();
+            }
+
+            if (completionListener != null) {
+                completionListener.timerStopped(new TimerStoppedEvent(this));
+            }
+        }
+
+        return stopTimeNanos - startTimeNanos;
+    }
+
+    /**
      * Indicate whether or not to log the results of the timer upon completion.
      * See {@link TimerLogType} for more information. Has no effect after the
      * timer has been stopped.
@@ -262,7 +367,7 @@ public class Timer {
     }
 
     /**
-     * Return the task name associate with this timer.
+     * Return the task name associated with this timer.
      * 
      * @return the taskName
      */
@@ -359,14 +464,11 @@ public class Timer {
         sb.append(" Elapsed (ns): ").append(getElapsedNanos());
         if (notes != null) {
             sb.append(" Notes: ");
-            boolean firstNote = true;
-            for (Object note : notes) {
-                if (firstNote) {
-                    firstNote = false;
-                } else {
+            for (int i = 0; i < notes.getLength(); i++) {
+                if (i > 0) {
                     sb.append(",");
                 }
-                sb.append(note);
+                sb.append(notes.getFormattedNote(i));
             }
         }
         return sb.toString();
@@ -389,12 +491,55 @@ public class Timer {
         sb.append(",").append(getElapsedMillis());
         sb.append(",").append(getElapsedNanos());
         sb.append(",").append(getConcurrent());
+        sb.append(",");
         if (notes != null) {
-            for (Object note : notes) {
-                sb.append(",").append(note);
-            }
+            sb.append(notes.toSingleValue());
         }
         return sb.toString();
+    }
+
+    /**
+     * Return a CSV formatted string providing a header for the entries that
+     * will be written if CSV logging is enabled. This may be used at the top of
+     * a CSV file and will always match the format of the records.
+     * 
+     * @return
+     */
+    public static String getCsvHeader() {
+        StringBuilder sb = new StringBuilder(100);
+        sb.append("start_time_ms");
+        sb.append(",").append("task");
+        sb.append(",").append("thread");
+        sb.append(",").append("elapsed_ms");
+        sb.append(",").append("elapsed_ns");
+        sb.append(",").append("concurrent");
+        sb.append(",").append("notes");
+        return sb.toString();
+    }
+
+    /**
+     * Create a {@link Timer} and populate the member variables using values
+     * extracted from the CSV record. This {@link Timer} will be in a
+     * {@link TimerStatus#STOPPED} state. Also, no handlers or completion
+     * listeners will be added.
+     * 
+     * @param timerAsCsv
+     * @return Timer from which values may be extracted.
+     */
+    public static Timer fromCsv(String timerAsCsv) {
+        String[] values = timerAsCsv.split(",");
+        Timer timer = new Timer(values[1], values[2]);
+        timer.status = TimerStatus.STOPPED;
+        timer.startTimeMillis = Long.parseLong(values[0].trim());
+        timer.startTimeNanos = 0L; // nanoseconds start and stop are relative to
+                                   // each other, not the wall clock.
+        timer.stopTimeNanos = Long.parseLong(values[4].trim());
+        timer.concurrent = Integer.parseInt(values[5].trim());
+        if (values.length > 6) {
+	        timer.notes = TimerNotes.parse(values[6]);
+        }
+
+        return timer;
     }
 
     /**
@@ -462,7 +607,7 @@ public class Timer {
     /**
      * Return array of domain specific objects.
      */
-    public Object[] getNotes() {
+    public TimerNotes getNotes() {
         return notes;
     }
 
@@ -476,7 +621,20 @@ public class Timer {
      * notes have been accumulated.
      */
     public void setNotes(Object... notes) {
-        this.notes = notes;
+        this.notes = new TimerNotes(notes);
+    }
+
+    /**
+     * Optional array of domain specific objects. These will be displayed if
+     * provided. As all objects are stored as {@link Object}, any primitive
+     * passed in will be auto boxed.
+     * <p>
+     * The setNotes method is destructive in that it will overwrite any current
+     * notes already present. The notes should be set once all of the applicable
+     * notes have been accumulated.
+     */
+    public void setNotes(boolean keyed, Object... notes) {
+        this.notes = new TimerNotes(keyed, notes);
     }
 
     public static enum TimerStatus {

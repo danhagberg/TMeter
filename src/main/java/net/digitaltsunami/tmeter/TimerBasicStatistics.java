@@ -40,6 +40,9 @@ public class TimerBasicStatistics implements Comparable<TimerBasicStatistics> {
     private volatile long totalElapsedNanos;
     private volatile long minElapsedNanos = Long.MAX_VALUE;
     private volatile long maxElapsedNanos = Long.MIN_VALUE;
+    private volatile double meanElapsedNanos;
+    // Used to calculate variance and standard deviation
+    private volatile double sumOfDeltasElapsedNanos;
 
     /**
      * Create an empty statistics instance for the task.
@@ -77,40 +80,14 @@ public class TimerBasicStatistics implements Comparable<TimerBasicStatistics> {
         }
         synchronized (this) {
             count++;
-            totalElapsedNanos += timer.getElapsedNanos();
-            minElapsedNanos = Math.min(minElapsedNanos, timer.getElapsedNanos());
-            maxElapsedNanos = Math.max(maxElapsedNanos, timer.getElapsedNanos());
-        }
-    }
-
-    /**
-     * Return the average elapsed time recorded for this task in nanoseconds.
-     * <p>
-     * Guarded by this as it requires the current setting of both count and
-     * total elapsed time.
-     * 
-     * @return average elapsed time in nanoseconds.
-     */
-    public synchronized double getAverageElapsedNanos() {
-        return (count == 0) ? 0.0 : totalElapsedNanos / count;
-    }
-
-    /**
-     * Return the average elapsed time recorded for this task. The time will be
-     * returned in the {@link TimeUnit} provided.
-     * <p>
-     * Guarded by this as it requires the current setting of both count and
-     * total elapsed time.
-     * 
-     * @param timeUnit
-     *            Desired time unit for returned value.
-     * @return average elapsed time in {@link TimeUnit} provided.
-     */
-    public synchronized double getAverageElapsed(TimeUnit timeUnit) {
-        if (count == 0) {
-            return 0.0;
-        } else {
-            return timeUnit.convert(totalElapsedNanos, TimeUnit.NANOSECONDS) / count;
+            long elapsedNanos = timer.getElapsedNanos();
+            totalElapsedNanos += elapsedNanos;
+            minElapsedNanos = Math.min(minElapsedNanos, elapsedNanos);
+            maxElapsedNanos = Math.max(maxElapsedNanos, elapsedNanos);
+            // Calculate running mean and variance.
+            double previousMean = meanElapsedNanos;
+            meanElapsedNanos += (elapsedNanos - previousMean) / count;
+            sumOfDeltasElapsedNanos += (elapsedNanos - previousMean) * (elapsedNanos - meanElapsedNanos);
         }
     }
 
@@ -200,6 +177,75 @@ public class TimerBasicStatistics implements Comparable<TimerBasicStatistics> {
     }
 
     /**
+     * Return the average elapsed time recorded for this task in nanoseconds.
+     * 
+     * @return average elapsed time in nanoseconds.
+     */
+    public double getAverageElapsedNanos() {
+        return meanElapsedNanos;
+    }
+
+    /**
+     * Return the average elapsed time recorded for this task. The time will be
+     * returned in the {@link TimeUnit} provided.
+     * <p>
+     * May lose precision as fractional portion of mean will be truncated in conversion method.
+     * 
+     * @param timeUnit
+     *            Desired time unit for returned value.
+     * @return average elapsed time in {@link TimeUnit} provided.
+     */
+    public double getAverageElapsed(TimeUnit timeUnit) {
+            return timeUnit.convert((long)meanElapsedNanos, TimeUnit.NANOSECONDS);
+    }
+
+    /**
+     * Return the variance of elapsed times recorded for this task in nanoseconds.
+     * 
+     * @return variance of elapsed time in nanoseconds.
+     */
+    public double getVarianceElapsedNanos() {
+        return count > 1 ? sumOfDeltasElapsedNanos / (count - 1) : 0.0;
+    }
+    /**
+     * Return the variance of elapsed times recorded for this task.
+     * The time will be returned in the {@link TimeUnit} provided.
+     * <p>
+     * May lose precision as fractional portion of variance will be truncated in conversion method.
+     * 
+     * @param timeUnit
+     *            Desired time unit for returned value.
+     * @return standard deviation of elapsed times in {@link TimeUnit} provided.
+     */
+    public double getVarianceElapsed(TimeUnit timeUnit) {
+            return timeUnit.convert((long)getVarianceElapsedNanos(), TimeUnit.NANOSECONDS);
+    }
+
+    
+    /**
+     * Return the standard deviation of elapsed times recorded for this task in nanoseconds.
+     * 
+     * @return standard deviation of elapsed time in nanoseconds.
+     */
+    public double getStdDevElapsedNanos() {
+        return Math.sqrt(getVarianceElapsedNanos());
+    }
+
+    /**
+     * Return the standard deviation of elapsed times recorded for this task.
+     * The time will be returned in the {@link TimeUnit} provided.
+     * <p>
+     * May lose precision as fractional portion of variance will be truncated in conversion method.
+     * 
+     * @param timeUnit
+     *            Desired time unit for returned value.
+     * @return standard deviation of elapsed times in {@link TimeUnit} provided.
+     */
+    public double getStdDevElapsed(TimeUnit timeUnit) {
+            return timeUnit.convert((long)getStdDevElapsedNanos(), TimeUnit.NANOSECONDS);
+    }
+
+    /**
      * Creates a snapshot of the instance and returns as a new instance. These
      * values will not be updated as more timers are processed.
      * 
@@ -213,6 +259,8 @@ public class TimerBasicStatistics implements Comparable<TimerBasicStatistics> {
             copy.minElapsedNanos = minElapsedNanos;
             copy.maxElapsedNanos = maxElapsedNanos;
             copy.totalElapsedNanos = totalElapsedNanos;
+            copy.meanElapsedNanos = meanElapsedNanos;
+            copy.sumOfDeltasElapsedNanos = sumOfDeltasElapsedNanos;
         }
         return copy;
     }
@@ -269,9 +317,15 @@ public class TimerBasicStatistics implements Comparable<TimerBasicStatistics> {
      */
     @Override
     public String toString() {
-        return "TimerBasicStatistics [taskName=" + taskName + ", count=" + count
-                + ", totalElapsedNanos=" + totalElapsedNanos + ", minElapsedNanos="
-                + minElapsedNanos + ", maxElapsedNanos=" + maxElapsedNanos + "]";
+        StringBuilder sb = new StringBuilder(200);
+        sb.append("TimerBasicStatistics [taskName=").append(taskName);
+        sb.append(", count=").append(count);
+        sb.append(", total=").append(totalElapsedNanos);
+        sb.append(", min=").append(minElapsedNanos);
+        sb.append(", max=").append(maxElapsedNanos); 
+        sb.append(", mean=").append(meanElapsedNanos); 
+        sb.append(", std_dev=").append(Math.sqrt(sumOfDeltasElapsedNanos)); 
+        sb.append("]");
+        return sb.toString();
     }
-
 }

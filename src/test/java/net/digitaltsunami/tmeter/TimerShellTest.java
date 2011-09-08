@@ -201,7 +201,7 @@ public class TimerShellTest {
     @Test
     public void testNotes() {
         timer.setNotes("a", "b", 1);
-        Object[] notes = timer.getNotes();
+        Object[] notes = timer.getNotes().getNotes();
         assertEquals(3, notes.length);
         assertEquals("a", notes[0].toString());
         assertEquals("b", notes[1].toString());
