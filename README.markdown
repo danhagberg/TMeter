@@ -25,8 +25,11 @@ Timer
 ### <strong>Thread Safety</strong>
  <p>
  To avoid synchronization, which could cause context swaps, instances of Timer
- are <strong>not</strong> thread safe. Some aspects are immutable and some
- will not change after they are set.
+ are <strong>not</strong> thread safe. This is not to say that they should not 
+ be used in a multi-threaded environment, only that they should not be updated 
+ by mulitple threads.  
+ <p>
+ Some aspects are immutable and some will not change after they are set.
  <p>
  Immutable:
  <ul>
