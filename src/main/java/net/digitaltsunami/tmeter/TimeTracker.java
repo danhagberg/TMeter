@@ -358,4 +358,14 @@ public class TimeTracker {
             }
         }
     }
+
+    /**
+     * Clear out the action chain.  This will cause the action chain to 
+     * complete processing and then terminate. 
+     */
+    public static void clearActionChain() {
+        if(actionChain != null) {
+            actionChain.clearActions();
+        }
+    }
 }

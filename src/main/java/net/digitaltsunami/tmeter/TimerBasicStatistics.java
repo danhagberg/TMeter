@@ -84,10 +84,10 @@ public class TimerBasicStatistics implements Comparable<TimerBasicStatistics> {
             totalElapsedNanos += elapsedNanos;
             minElapsedNanos = Math.min(minElapsedNanos, elapsedNanos);
             maxElapsedNanos = Math.max(maxElapsedNanos, elapsedNanos);
-            // Calculate running mean and variance.
+            
             double previousMean = meanElapsedNanos;
             meanElapsedNanos += (elapsedNanos - previousMean) / count;
-            sumOfDeltasElapsedNanos += (elapsedNanos - previousMean) * (elapsedNanos - meanElapsedNanos);
+            sumOfDeltasElapsedNanos += ((double)elapsedNanos - previousMean) * ((double)elapsedNanos - meanElapsedNanos);
         }
     }
 
@@ -319,12 +319,12 @@ public class TimerBasicStatistics implements Comparable<TimerBasicStatistics> {
     public String toString() {
         StringBuilder sb = new StringBuilder(200);
         sb.append("TimerBasicStatistics [taskName=").append(taskName);
-        sb.append(", count=").append(count);
-        sb.append(", total=").append(totalElapsedNanos);
-        sb.append(", min=").append(minElapsedNanos);
-        sb.append(", max=").append(maxElapsedNanos); 
-        sb.append(", mean=").append(meanElapsedNanos); 
-        sb.append(", std_dev=").append(Math.sqrt(sumOfDeltasElapsedNanos)); 
+        sb.append(", count=").append(getCount());
+        sb.append(", total=").append(getTotalElapsedNanos());
+        sb.append(", min=").append(getMinElapsedNanos());
+        sb.append(", max=").append(getMaxElapsedNanos()); 
+        sb.append(", mean=").append(getAverageElapsedNanos()); 
+        sb.append(", std_dev=").append(getStdDevElapsedNanos());
         sb.append("]");
         return sb.toString();
     }

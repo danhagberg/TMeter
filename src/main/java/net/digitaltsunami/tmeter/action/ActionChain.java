@@ -16,8 +16,10 @@ __copyright_end__ */
 package net.digitaltsunami.tmeter.action;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import net.digitaltsunami.tmeter.Timer;
 import net.digitaltsunami.tmeter.TimerShell;
@@ -54,7 +56,7 @@ public class ActionChain {
     /**
      * Executor to process actionQueue
      */
-    private Executor queueProcessor;
+    private ExecutorService queueProcessor;
 
     /**
      * Root action in potential chain of actions.
@@ -133,6 +135,7 @@ public class ActionChain {
                         if (timer instanceof TimerShell) {
                             // Shut down queue processor if TimerShell is placed
                             // on queue.
+                            queueProcessor.shutdown();
                             return;
                         }
                     } catch (InterruptedException e) {
