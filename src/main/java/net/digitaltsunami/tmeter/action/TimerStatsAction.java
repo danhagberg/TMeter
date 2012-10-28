@@ -27,7 +27,10 @@ import net.digitaltsunami.tmeter.Timer;
 import net.digitaltsunami.tmeter.TimerBasicStatistics;
 
 /**
- * @author dhagberg TODO Fill out this class.
+ * An implementation of {@link TimerAction} that provides basic statistics for all
+ * timers processed by this action.  Basic statistics may be retrieved for a specific
+ * task or the entire set of tasks. 
+ * @author dhagberg 
  * 
  */
 public class TimerStatsAction extends TimerAction {
@@ -75,22 +78,24 @@ public class TimerStatsAction extends TimerAction {
     /**
      * Return a live instance of {@link TimerBasicStatistics} for the provided
      * task name. Internal values will be modified as this action processes
-     * timers. 
+     * timers.
      * 
      * @param taskName
-     * @return Live instance of {@link TimerBasicStatistics} or null if that task has not yet been processed by this action. 
+     * @return Live instance of {@link TimerBasicStatistics} or null if that
+     *         task has not yet been processed by this action.
      */
     public TimerBasicStatistics getTimerStatistics(String taskName) {
         return statsByTask.get(taskName);
     }
 
     /**
-     * Return a snapshot instance of {@link TimerBasicStatistics} for the provided
-     * task name. Internal values will be not be modified as this action processes
-     * timers. 
+     * Return a snapshot instance of {@link TimerBasicStatistics} for the
+     * provided task name. Internal values will be not be modified as this
+     * action processes timers.
      * 
      * @param taskName
-     * @return Snapshot of {@link TimerBasicStatistics} for task name or null if that task has not yet been processed by this action. 
+     * @return Snapshot of {@link TimerBasicStatistics} for task name or null if
+     *         that task has not yet been processed by this action.
      */
     public TimerBasicStatistics getTimerStatisticsSnapshot(String taskName) {
         TimerBasicStatistics stat = statsByTask.get(taskName);
@@ -98,8 +103,9 @@ public class TimerStatsAction extends TimerAction {
     }
     
     /**
-     * Return a collection of live instances of {@link TimerBasicStatistics} for all tasks processed up to the point of invoking this method. 
-     * Internal values will be modified as this action processes * timers. 
+     * Return a collection of live instances of {@link TimerBasicStatistics} for
+     * all tasks processed up to the point of invoking this method. Internal
+     * values will be modified as this action processes timers.
      * 
      * @return Live instance of {@link TimerBasicStatistics}
      */
@@ -109,8 +115,9 @@ public class TimerStatsAction extends TimerAction {
     }
 
     /**
-     * Return a collection of snapshot instances of {@link TimerBasicStatistics} for all tasks processed up to the point of invoking this method. 
-     * Internal values will be modified as this action processes * timers. 
+     * Return a collection of snapshot instances of {@link TimerBasicStatistics}
+     * for all tasks processed up to the point of invoking this method. Internal
+     * values will be modified as this action processes timers.
      * 
      * @return Snapshot instance of {@link TimerBasicStatistics}
      */

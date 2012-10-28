@@ -43,6 +43,7 @@ public class TimerBasicStatistics implements Comparable<TimerBasicStatistics> {
     private volatile double meanElapsedNanos;
     // Used to calculate variance and standard deviation
     private volatile double sumOfDeltasElapsedNanos;
+    private TimeUnit reportingUnit = TimeUnit.MILLISECONDS;
 
     /**
      * Create an empty statistics instance for the task.
@@ -320,11 +321,11 @@ public class TimerBasicStatistics implements Comparable<TimerBasicStatistics> {
         StringBuilder sb = new StringBuilder(200);
         sb.append("TimerBasicStatistics [taskName=").append(taskName);
         sb.append(", count=").append(getCount());
-        sb.append(", total=").append(getTotalElapsedNanos());
-        sb.append(", min=").append(getMinElapsedNanos());
-        sb.append(", max=").append(getMaxElapsedNanos()); 
-        sb.append(", mean=").append(getAverageElapsedNanos()); 
-        sb.append(", std_dev=").append(getStdDevElapsedNanos());
+        sb.append(", total=").append(getTotalElapsed(reportingUnit));
+        sb.append(", min=").append(getMinElapsed(reportingUnit));
+        sb.append(", max=").append(getMaxElapsed(reportingUnit)); 
+        sb.append(", mean=").append(getAverageElapsed(reportingUnit)); 
+        sb.append(", std_dev=").append(getStdDevElapsed(reportingUnit));
         sb.append("]");
         return sb.toString();
     }
