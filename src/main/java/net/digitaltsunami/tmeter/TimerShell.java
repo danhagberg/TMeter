@@ -16,6 +16,7 @@ __copyright_end__ */
 package net.digitaltsunami.tmeter;
 
 import net.digitaltsunami.tmeter.Timer.TimerStatus;
+import net.digitaltsunami.tmeter.record.TimeRecorder;
 
 /**
  * Timer shell used as return value when time recording is turned off.
@@ -25,7 +26,7 @@ import net.digitaltsunami.tmeter.Timer.TimerStatus;
 public class TimerShell extends Timer {
 
     public TimerShell(String taskName) {
-        super(taskName, false, TimerLogType.NONE);
+        super(taskName, false, null);
     }
 
     @Override
@@ -42,7 +43,7 @@ public class TimerShell extends Timer {
     }
 
     @Override
-    public void setLogType(TimerLogType logType) {
+    public void setTimeRecorder(TimeRecorder timeRecorder) {
     }
 
     @Override

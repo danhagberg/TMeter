@@ -26,6 +26,8 @@ import net.digitaltsunami.tmeter.action.ActionChain;
 import net.digitaltsunami.tmeter.action.TimerAction;
 import net.digitaltsunami.tmeter.event.TimerStoppedEvent;
 import net.digitaltsunami.tmeter.event.TimerStoppedListener;
+import net.digitaltsunami.tmeter.record.NullTimeRecorder;
+import net.digitaltsunami.tmeter.record.TimeRecorder;
 
 /**
  * A framework for recording elapsed time to perform a given task and to drive
@@ -80,10 +82,10 @@ public class TimeTracker {
     private static boolean trackConcurrent;
 
     /**
-     * Indicates how to log the timer when it is stopped. This setting will be
-     * used to set the corresponding entry on each timer as it is created.
+     * Indicates how to record the timer when it is stopped. This setting will be
+     * used as a default to set the corresponding entry on each timer as it is created.
      */
-    private static TimerLogType logType = TimerLogType.NONE;
+    private static TimeRecorder defaultTimeRecorder = NullTimeRecorder.getInstance(); 
 
     /**
      * List of all timers created since the keepList value was set to true.
@@ -153,7 +155,7 @@ public class TimeTracker {
             return dummy;
         }
 
-        Timer timer = new Timer(taskName, true, logType);
+        Timer timer = new Timer(taskName, true, defaultTimeRecorder);
         // Do all time intensive settings prior to starting time
         // keeping list
         if (keepList) {
@@ -237,23 +239,24 @@ public class TimeTracker {
     }
 
     /**
-     * @return the logType
+     * @return the default {@link TimeRecorder} used to populate the
+     *         corresponding field when creating {@link Timer}s
      */
-    public static TimerLogType getLogType() {
-        return logType;
+    public static TimeRecorder getDefaultTimeRecorder() {
+        return defaultTimeRecorder;
     }
 
     /**
-     * Indicates how to log the timer when it is stopped. This setting will be
-     * used to set the corresponding entry on each timer as it is created.
-     * Changes to setting will affect only those timers created after this
-     * invocation.
+     * Indicates the default method to record the timer when it is stopped. This
+     * setting will be used to set the corresponding entry on each timer as it
+     * is created. Changes to setting will affect only those timers created
+     * after this invocation.
      * 
      * @param logType
      *            type of logging to occur on timer completion.
      */
-    public static void setLogType(TimerLogType logType) {
-        TimeTracker.logType = logType;
+    public static void setDefaultTimeRecorder(TimeRecorder defaultTimeRecorder) {
+        TimeTracker.defaultTimeRecorder = defaultTimeRecorder;
     }
 
     /**
@@ -324,21 +327,6 @@ public class TimeTracker {
      */
     public static Timer[] getCurrentTimers() {
         return timerList.toArray(new Timer[0]);
-    }
-
-    /**
-     * Set the output for all Timer instances. Defaults to stdout. If the timer
-     * should be written to an output stream other than stdout, it should be set
-     * prior to the first invocation.
-     * 
-     * @param out
-     *            PrintStream to which timer output will be written if logging is
-     *            set to log upon stop.
-     * @see #setLogType(TimerLogType)
-     * @see Timer#setOut(PrintStream)
-     */
-    public static void setLogOut(PrintStream out) {
-        Timer.setOut(out);
     }
 
     /**

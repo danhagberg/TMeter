@@ -28,6 +28,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import net.digitaltsunami.tmeter.Timer.TimerStatus;
+import net.digitaltsunami.tmeter.record.FileTimeRecorder;
+import net.digitaltsunami.tmeter.record.NullTimeRecorder;
+import net.digitaltsunami.tmeter.record.TimeRecorder;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -209,23 +212,14 @@ public class TimerShellTest {
     }
 
     /**
-     * Test that output is written in csv format when specified.
+     * Test that output is not written when a valid {@link TimeRecorder} is set.
+     * This is a shell timer and should not write any output.
      */
     @Test
     public void testOutputCsv() {
-        timer.setLogType(TimerLogType.CSV);
-        String output = TestUtils.getTimerLogOutput(timer, true);
+        timer.setTimeRecorder(new FileTimeRecorder(System.out));
+        String output = TestUtils.getTimerLogOutput(timer, TimerLogType.TEXT, true);
         assertEquals("CSV output should not have been written.", 0, output.length());
-    }
-
-    /**
-     * Test that output is written in text format when specified.
-     */
-    @Test
-    public void testOutputText() {
-        timer.setLogType(TimerLogType.TEXT);
-        String output = TestUtils.getTimerLogOutput(timer, true);
-        assertEquals("TEXT output should not have been written.", 0, output.length());
     }
 
     /**
@@ -233,8 +227,8 @@ public class TimerShellTest {
      */
     @Test
     public void testOutputNone() {
-        timer.setLogType(TimerLogType.NONE);
-        String output = TestUtils.getTimerLogOutput(timer, true);
+        timer.setTimeRecorder(NullTimeRecorder.getInstance());
+        String output = TestUtils.getTimerLogOutput(timer, TimerLogType.TEXT, true);
 
         assertEquals("Should not have written anything to file.", 0, output.length());
     }
@@ -245,7 +239,7 @@ public class TimerShellTest {
      */
     @Test
     public void testIsRunning() {
-        Timer testTimer = new Timer(TASK_NAME, true, TimerLogType.NONE);
+        Timer testTimer = new Timer(TASK_NAME, true, NullTimeRecorder.getInstance());
         assertFalse("Timer has not yet been started.  isRunning should report false", testTimer.isRunning());
         testTimer.start();
         assertTrue("Timer has been started.  isRunning should report true", testTimer.isRunning());
@@ -258,7 +252,7 @@ public class TimerShellTest {
      */
     @Test
     public void testIsStopped() {
-        Timer testTimer = new Timer(TASK_NAME, true, TimerLogType.NONE);
+        Timer testTimer = new Timer(TASK_NAME, true, NullTimeRecorder.getInstance());
         assertFalse("Timer has not yet been started.  isStopped should report false", testTimer.isStopped());
         testTimer.start();
         assertFalse("Timer has been started and is still running.  isStopped should report false", testTimer.isStopped());

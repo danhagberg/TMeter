@@ -23,6 +23,8 @@ import static org.junit.Assert.fail;
 import net.digitaltsunami.tmeter.Timer;
 import net.digitaltsunami.tmeter.TimerLogType;
 import net.digitaltsunami.tmeter.TimerShell;
+import net.digitaltsunami.tmeter.record.NullTimeRecorder;
+import net.digitaltsunami.tmeter.record.TimeRecorder;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +41,7 @@ public class ActionChainTest {
 
     @Before
     public void setup() {
-        testTimer = new Timer(TEST_TIMER, false, TimerLogType.NONE);
+        testTimer = new Timer(TEST_TIMER, false, NullTimeRecorder.getInstance());
         actionCount = new TimerActionCount();
         testActionChain = new ActionChain(actionCount);
     }

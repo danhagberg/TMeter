@@ -28,6 +28,8 @@ import java.util.List;
 import net.digitaltsunami.tmeter.Timer.TimerStatus;
 import net.digitaltsunami.tmeter.action.ActionChain;
 import net.digitaltsunami.tmeter.action.TimerAction;
+import net.digitaltsunami.tmeter.record.ConsoleTimeRecorder;
+import net.digitaltsunami.tmeter.record.NullTimeRecorder;
 
 import org.junit.Test;
 
@@ -38,6 +40,8 @@ import org.junit.Test;
 public class TimeTrackerTest {
 
     private static final String TEST_TASK_NAME = "TEST_TASK_NAME";
+    private static ConsoleTimeRecorder csvRecorder = new ConsoleTimeRecorder(TimerLogType.CSV);
+    private static ConsoleTimeRecorder textRecorder = new ConsoleTimeRecorder(TimerLogType.TEXT);
 
     /**
      * Test method for
@@ -102,16 +106,17 @@ public class TimeTrackerTest {
     /**
      * Test method for
      * {@link net.digitaltsunami.tmeter.TimeTracker#getLogType()} and
-     * {@link net.digitaltsunami.tmeter.TimeTracker#setLogType(net.digitaltsunami.tmeter.TimerLogType)}
+     * {@link net.digitaltsunami.tmeter.TimeTracker#setDefaultTimeRecorder(TimeRecorder)}
      * .
      */
     @Test
     public void testLogTypeSettings() {
-        assertEquals("LogType should default to NONE", TimerLogType.NONE, TimeTracker.getLogType());
-        TimeTracker.setLogType(TimerLogType.TEXT);
-        assertEquals("LogType should now be TEXT", TimerLogType.TEXT, TimeTracker.getLogType());
-        // Restore to default
-        TimeTracker.setLogType(TimerLogType.NONE);
+        assertEquals("TimeRecorder should default to NullTimeRecorder", NullTimeRecorder.getInstance(),
+                TimeTracker.getDefaultTimeRecorder());
+        TimeTracker.setDefaultTimeRecorder(csvRecorder);
+        assertEquals("TimeRecorder should now be TEXT", csvRecorder,
+                TimeTracker.getDefaultTimeRecorder());
+        restoreDefaultTimeRecorder();
     }
 
     /**
@@ -119,13 +124,13 @@ public class TimeTrackerTest {
      */
     @Test
     public void testLogTypePropagation() {
-        TimeTracker.setLogType(TimerLogType.TEXT);
+        TimeTracker.setDefaultTimeRecorder(textRecorder);
         Timer t = TimeTracker.startRecording(TEST_TASK_NAME);
-        String output = TestUtils.getTimerLogOutput(t, true);
+        String output = TestUtils.getTimerLogOutput(t, TimerLogType.TEXT, true);
         String text = t.toString();
         assertEquals(text, output);
         // Restore to default
-        TimeTracker.setLogType(TimerLogType.NONE);
+        restoreDefaultTimeRecorder();
     }
 
     /**
@@ -203,6 +208,13 @@ public class TimeTrackerTest {
         t2.stop();
         Thread.sleep(1000); // Sleep to allow actionChain to process the timer.
         assertTrue("Timer list does not contain the timer. ", listOfTimers.contains(t2));
+    }
+
+    /**
+     * 
+     */
+    protected void restoreDefaultTimeRecorder() {
+        TimeTracker.setDefaultTimeRecorder(NullTimeRecorder.getInstance());
     }
 
 }

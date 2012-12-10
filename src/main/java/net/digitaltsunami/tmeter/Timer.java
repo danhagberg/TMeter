@@ -17,13 +17,12 @@ package net.digitaltsunami.tmeter;
 
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import net.digitaltsunami.tmeter.action.ActionChain;
 import net.digitaltsunami.tmeter.event.TimerStoppedEvent;
 import net.digitaltsunami.tmeter.event.TimerStoppedListener;
+import net.digitaltsunami.tmeter.record.TimeRecorder;
 
 /**
  * A record of elapsed time. Timers can be used independently or as part of the
@@ -151,7 +150,7 @@ public class Timer implements Serializable {
     /**
      * What to do when the timer stops. Default is to do nothing.
      */
-    private TimerLogType logType;
+    private transient TimeRecorder timeRecorder;
 
     /**
      * Name of thread under which the timer creation was running.
@@ -165,12 +164,6 @@ public class Timer implements Serializable {
     private TimerNotes notes;
 
     /**
-     * If the timer should be written to an output stream other than stdout, it
-     * should be set prior to the first invocation.
-     */
-    private volatile static PrintStream out = System.out;
-
-    /**
 	 * Listener to notify when this timer is stopped.
 	 */
     private transient TimerStoppedListener completionListener;
@@ -181,7 +174,7 @@ public class Timer implements Serializable {
      * @param taskName
      */
     public Timer(String taskName) {
-        this(taskName, false, TimerLogType.NONE);
+        this(taskName, false, null);
     }
 
     /**
@@ -192,10 +185,10 @@ public class Timer implements Serializable {
      * @param delayStart
      * @param logType
      */
-    public Timer(String taskName, boolean delayStart, TimerLogType logType) {
+    public Timer(String taskName, boolean delayStart, TimeRecorder timeRecorder) {
         this.status = TimerStatus.INITIALIZED;
         this.taskName = taskName;
-        this.logType = logType;
+        this.timeRecorder = timeRecorder;
         this.threadName = Thread.currentThread().getName();
         if (!delayStart) {
             start();
@@ -211,7 +204,6 @@ public class Timer implements Serializable {
     private Timer(String taskName, String threadName) {
         this.taskName = taskName;
         this.threadName = threadName;
-        this.logType = TimerLogType.NONE;
     }
 
     /**
@@ -239,8 +231,8 @@ public class Timer implements Serializable {
         if (status == TimerStatus.RUNNING) {
             stopTimeNanos = System.nanoTime();
             status = TimerStatus.STOPPED;
-            if (logType.isLoggingEnabled()) {
-                logTimer();
+            if (timeRecorder != null) {
+                timeRecorder.record(this);
             }
 
             if (completionListener != null) {
@@ -327,8 +319,8 @@ public class Timer implements Serializable {
             stopTimeNanos = System.nanoTime();
             status = TimerStatus.STOPPED;
             this.notes = new TimerNotes(keyed, notes);
-            if (logType.isLoggingEnabled()) {
-                logTimer();
+            if (timeRecorder != null) {
+                timeRecorder.record(this);
             }
 
             if (completionListener != null) {
@@ -341,29 +333,13 @@ public class Timer implements Serializable {
 
     /**
      * Indicate whether or not to log the results of the timer upon completion.
-     * See {@link TimerLogType} for more information. Has no effect after the
+     * See {@link TimeRecorder} for more information. Has no effect after the
      * timer has been stopped.
      * 
      * @param logType
      */
-    public void setLogType(TimerLogType logType) {
-        this.logType = logType;
-    }
-
-    /**
-     * Log the time according to the log type.
-     */
-    private void logTimer() {
-        switch (logType) {
-        case CSV:
-            out.println(this.toCsv());
-            break;
-
-        case TEXT:
-        default:
-            out.println(this.toString());
-            break;
-        }
+    public void setTimeRecorder(TimeRecorder timeRecorder) {
+        this.timeRecorder = timeRecorder;
     }
 
     /**
@@ -639,20 +615,6 @@ public class Timer implements Serializable {
 
     public static enum TimerStatus {
         INITIALIZED, RUNNING, STOPPED;
-    }
-
-    /**
-     * Set the output for all Timer instances. Defaults to stdout. If the timer
-     * should be written to an output stream other than stdout, it should be set
-     * prior to the first invocation.
-     * 
-     * @param out
-     *            PrintStream to which timer output will be written logging is
-     *            set to log upon stop.
-     * @see #setLogType(TimerLogType)
-     */
-    public static void setOut(PrintStream out) {
-        Timer.out = out;
     }
 
     /**
