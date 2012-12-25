@@ -287,7 +287,7 @@ public class TimerTest {
     public void testGetElapsedNanos() {
         // Should return -1 prior if currently running.
         assertEquals(-1, timer.getElapsedNanos());
-        long elapsedNanos = timer.stop();
+        timer.stop();
         assertTrue("Elaped nanos should be greater than zero",
                 timer.getElapsedNanos() > 0);
     }

@@ -19,7 +19,6 @@ __copyright_end__ */
 package net.digitaltsunami.tmeter.event;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import net.digitaltsunami.tmeter.Timer;
 
 import org.junit.Test;

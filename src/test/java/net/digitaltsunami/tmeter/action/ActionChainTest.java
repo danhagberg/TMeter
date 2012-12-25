@@ -18,13 +18,12 @@ __copyright_end__ */
  */
 package net.digitaltsunami.tmeter.action;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import net.digitaltsunami.tmeter.Timer;
-import net.digitaltsunami.tmeter.TimerLogType;
 import net.digitaltsunami.tmeter.TimerShell;
 import net.digitaltsunami.tmeter.record.NullTimeRecorder;
-import net.digitaltsunami.tmeter.record.TimeRecorder;
 
 import org.junit.Before;
 import org.junit.Test;

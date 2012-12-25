@@ -26,6 +26,11 @@ public class TmeterException extends Exception {
     /**
      * 
      */
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 
+     */
     public TmeterException() {
         // TODO Auto-generated constructor stub
     }

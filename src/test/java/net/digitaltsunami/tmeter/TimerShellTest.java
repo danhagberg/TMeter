@@ -19,14 +19,8 @@ __copyright_end__ */
 package net.digitaltsunami.tmeter;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
-
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
+import static org.junit.Assert.assertTrue;
 import net.digitaltsunami.tmeter.Timer.TimerStatus;
 import net.digitaltsunami.tmeter.record.FileTimeRecorder;
 import net.digitaltsunami.tmeter.record.NullTimeRecorder;
@@ -179,7 +173,8 @@ public class TimerShellTest {
     public void testGetElapsedNanos() {
         // Should return -1 prior if currently running.
         assertEquals(-1, timer.getElapsedNanos());
-        long elapsedNanos = timer.stop();
+        timer.stop();
+        // Shell should always return zero
         assertEquals(0, timer.getElapsedNanos());
     }
 
@@ -195,6 +190,7 @@ public class TimerShellTest {
         assertEquals(-1, timer.getElapsedMillis());
         Thread.sleep(1);
         timer.stop();
+        // Shell should always return zero
         assertEquals(0, timer.getElapsedMillis());
     }
 
