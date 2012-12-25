@@ -15,7 +15,6 @@
 __copyright_end__ */
 package net.digitaltsunami.tmeter;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,9 +57,9 @@ import net.digitaltsunami.tmeter.record.TimeRecorder;
  * more information.
  * <p>
  * Disabling - Allows the creation of timers to be enabled/disabled during
- * processing so that the timer logic can be left in place with very little overhead
- * when disabled. When disabled, a single instance of {@link TimerShell} will be
- * returned for all timer recording requests.
+ * processing so that the timer logic can be left in place with very little
+ * overhead when disabled. When disabled, a single instance of
+ * {@link TimerShell} will be returned for all timer recording requests.
  * <p>
  * Concurrent counts - Can maintain concurrent task counts if enabled. This
  * provides a rudimentary concurrent count for all timers recording the same
@@ -82,10 +81,11 @@ public class TimeTracker {
     private static boolean trackConcurrent;
 
     /**
-     * Indicates how to record the timer when it is stopped. This setting will be
-     * used as a default to set the corresponding entry on each timer as it is created.
+     * Indicates how to record the timer when it is stopped. This setting will
+     * be used as a default to set the corresponding entry on each timer as it
+     * is created.
      */
-    private static TimeRecorder defaultTimeRecorder = NullTimeRecorder.getInstance(); 
+    private static TimeRecorder defaultTimeRecorder = NullTimeRecorder.getInstance();
 
     /**
      * List of all timers created since the keepList value was set to true.
@@ -109,11 +109,6 @@ public class TimeTracker {
      * returned by {@link #startRecording(String)}.
      */
     private static boolean trackingDisabled;
-
-    /**
-     * A set of actions configured to process completed timers.
-     */
-    private static ActionChain actionChain;
 
     /**
      * Listener for {@link TimerStoppedEvent}. Will drive any configured
@@ -274,9 +269,7 @@ public class TimeTracker {
     public static void clear() {
         timerList.clear();
         concurrentMap.clear();
-        if (actionChain != null) {
-            actionChain.reset();
-        }
+        ActionChainSingleton.getInstance().reset();
     }
 
     /**
@@ -303,18 +296,37 @@ public class TimeTracker {
      * Return the current post completion action processor.
      * 
      * @return
+     * @deprecated The action chain will not be returned in the next version.
      */
     public static ActionChain getActionChain() {
-        return actionChain;
+        return ActionChainSingleton.getInstance();
     }
 
     /**
      * Set the current post completion action processor.
+     * 
+     * @deprecated This method should no longer be used. Use
+     *             {@link #addCompletionAction(TimerAction)} instead.
      */
     public static void setActionChain(ActionChain newActionChain) {
-        actionChain = newActionChain;
+        ActionChain actionChain = ActionChainSingleton.getInstance();
+        for (TimerAction action : newActionChain.getActions()) {
+            actionChain.addAction(action);
+        }
+
         // Activate the timer completion listener as this is where interaction
         // with the action processor occurs.
+        listenForCompletion = true;
+    }
+
+    /**
+     * Add an action to the chain of actions that will be performed upon each
+     * timer completion.
+     * 
+     * @param action
+     */
+    public static void addCompletionAction(TimerAction action) {
+        ActionChainSingleton.getInstance().addAction(action);
         listenForCompletion = true;
     }
 
@@ -341,19 +353,28 @@ public class TimeTracker {
             if (TimeTracker.isTrackConcurrent()) {
                 TimeTracker.decrementConcurrent(timer.getTaskName());
             }
-            if (actionChain != null) {
-                actionChain.submitCompletedTimer(timer);
+            if (listenForCompletion) {
+                ActionChainSingleton.getInstance().submitCompletedTimer(timer);
             }
         }
     }
 
     /**
-     * Clear out the action chain.  This will cause the action chain to 
-     * complete processing and then terminate. 
+     * Clear out the action chain. This will cause the action chain to complete
+     * processing and then terminate.
      */
     public static void clearActionChain() {
-        if(actionChain != null) {
-            actionChain.clearActions();
+        ActionChainSingleton.getInstance().clearActions();
+    }
+
+    /**
+     * Singleton provider for lazy instantiation of ActionChain
+     */
+    private static class ActionChainSingleton {
+        private static ActionChain actionChainInstance = new ActionChain();
+
+        static ActionChain getInstance() {
+            return actionChainInstance;
         }
     }
 }

@@ -15,11 +15,11 @@
 __copyright_end__ */
 package net.digitaltsunami.tmeter.action;
 
-import java.util.concurrent.Executor;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import net.digitaltsunami.tmeter.Timer;
 import net.digitaltsunami.tmeter.TimerShell;
@@ -63,6 +63,9 @@ public class ActionChain {
      */
     private TimerAction rootAction;
 
+    public ActionChain() {
+    }
+
     public ActionChain(TimerAction action) {
         this.rootAction = action;
         createQueueProcessor();
@@ -78,6 +81,9 @@ public class ActionChain {
         }
     }
 
+    /**
+     * Invokes {@link TimerAction#reset()} on each action within the chain.
+     */
     public void reset() {
         TimerAction tempRoot = rootAction;
         if (tempRoot != null) {
@@ -98,10 +104,17 @@ public class ActionChain {
     /**
      * Add the provided {@link TimerAction} to the current chain of
      * {@link TimerAction} instances.
+     * <p>
+     * This method is synchronized as it may create the root node, but other
+     * methods that check the root are not synchronized to reduce context
+     * switching; therefore, the if a timer completes before a timer action is
+     * added, then it may be missed. This should not happen in the normal
+     * execution as the setup should be completed prior to starting tasks.
      */
-    public TimerAction addAction(TimerAction action) {
+    public synchronized TimerAction addAction(TimerAction action) {
         if (rootAction == null) {
             rootAction = action;
+            createQueueProcessor();
             return action;
         }
         return rootAction.addAction(action);
@@ -151,6 +164,20 @@ public class ActionChain {
                 }
             }
         });
+    }
+
+    /**
+     * Return a set of all actions currently in the chain.
+     * @return
+     */
+    public Set<TimerAction> getActions() {
+        Set<TimerAction> actions = new HashSet<TimerAction>();
+        TimerAction currentAction = rootAction;
+        while (currentAction != null) {
+            actions.add(currentAction);
+            currentAction = currentAction.nextAction;
+        }
+        return actions;
     }
 
 }

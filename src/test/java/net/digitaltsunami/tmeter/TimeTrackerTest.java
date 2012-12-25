@@ -111,7 +111,8 @@ public class TimeTrackerTest {
      */
     @Test
     public void testLogTypeSettings() {
-        assertEquals("TimeRecorder should default to NullTimeRecorder", NullTimeRecorder.getInstance(),
+        assertEquals("TimeRecorder should default to NullTimeRecorder",
+                NullTimeRecorder.getInstance(),
                 TimeTracker.getDefaultTimeRecorder());
         TimeTracker.setDefaultTimeRecorder(csvRecorder);
         assertEquals("TimeRecorder should now be TEXT", csvRecorder,
@@ -143,7 +144,7 @@ public class TimeTrackerTest {
         // Need to use clear to test clear later, but other tests may have
         // changed the values as this is testing a static class.
         TimeTracker.clear();
-        Timer t1 = TimeTracker.startRecording(TEST_TASK_NAME);
+        TimeTracker.startRecording(TEST_TASK_NAME);
         Timer t2 = TimeTracker.startRecording(TEST_TASK_NAME);
         assertEquals(2, t2.getConcurrent());
         assertEquals("Current number of entries in timer list incorrect. ", 2,
@@ -183,6 +184,33 @@ public class TimeTrackerTest {
         TimeTracker.setTrackingDisabled(false);
     }
 
+    /**
+     * 
+     */
+    @Test
+    public void testTimerActionSettings() throws InterruptedException {
+        // Create an action that will populate a container with processed
+        // timer. This will show that the chain is set and operable.
+        final List<Timer> listOfTimers = new ArrayList<Timer>();
+        TimerAction action = new TimerAction() {
+    
+            @Override
+            protected void processTimer(Timer timer) {
+                listOfTimers.add(timer);
+            }
+        };
+        TimeTracker.addCompletionAction(action);
+        Timer t1 = TimeTracker.startRecording(TEST_TASK_NAME);
+        t1.start();
+        t1.stop();
+        Thread.sleep(1000); // Sleep to allow actionChain to process the timer.
+        assertTrue("Timer list does not contain the timer. ", listOfTimers.contains(t1));
+    }
+
+    /**
+     * Old method for testing timer action settings. Replaced by testTimerActionSettings()
+     * @deprecated  This test should be removed when set/getActionChain are removed
+     */
     @Test
     public void testActionChainSettings() throws InterruptedException {
         // Create an action that will populate a container with processed
@@ -197,7 +225,7 @@ public class TimeTrackerTest {
         };
         ActionChain chain = new ActionChain(action);
         TimeTracker.setActionChain(chain);
-        assertEquals(chain, TimeTracker.getActionChain());
+        assertTrue(TimeTracker.getActionChain().getActions().contains(action));
         Timer t1 = TimeTracker.startRecording(TEST_TASK_NAME);
         t1.start();
         t1.stop();
