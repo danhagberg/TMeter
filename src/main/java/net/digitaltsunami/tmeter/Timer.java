@@ -1,4 +1,5 @@
 /* __copyright_begin__
+
    Copyright 2011 Dan Hagberg
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +16,6 @@
 __copyright_end__ */
 package net.digitaltsunami.tmeter;
 
-import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -81,13 +81,13 @@ import net.digitaltsunami.tmeter.record.TimeRecorder;
  * 
  * </pre>
  * 
- * More complex - create and return a non-running Timer with CSV logging and a
- * set of domain specific notes. The CSV line along with the notes will be
- * written to stdout.
+ * More complex - create and return a non-running Timer with CSV logging to the
+ * console and a set of domain specific notes. The CSV line along with the notes
+ * will be written to stdout.
  * 
  * <pre>
  * <code>
- *     Timer serviceTimer = new Timer("BuildResults", true, TimerLogType.CSV);
+ *     Timer serviceTimer = new Timer("BuildResults", true, new ConsoleTimeRecorder(TimerLogType.CSV));
  *     serviceTimer.setNotes(siteName, 4, user);
  *     serviceTimer.start();
  *     .

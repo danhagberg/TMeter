@@ -71,7 +71,7 @@ Timer
  
  <pre>
  <code>
-     Timer serviceTimer = new Timer("BuildResults", true, TimerLogType.CSV);
+     Timer serviceTimer = new Timer("BuildResults", true, new ConsoleTimeRecorder(TimerLogType.CSV));
      serviceTimer.setNotes(siteName, 4, user);
      serviceTimer.start();
      .
