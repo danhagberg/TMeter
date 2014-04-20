@@ -209,7 +209,6 @@ public class TimeTrackerTest {
 
     /**
      * Old method for testing timer action settings. Replaced by testTimerActionSettings()
-     * @deprecated  This test should be removed when set/getActionChain are removed
      */
     @Test
     public void testActionChainSettings() throws InterruptedException {

@@ -130,6 +130,28 @@ public class TimerTest {
     }
 
     /**
+     * Test method for {@link Timer#stop(boolean, Object...)}
+     */
+    @Test
+    public void testStopWithKeyedNotes() {
+        assertEquals(TimerStatus.RUNNING, timer.getStatus());
+        long elapsedNanos = timer.stop(true, "k1", "1", "k2", 2);
+        // Test time aspect of stop method
+        assertEquals(TimerStatus.STOPPED, timer.getStatus());
+        assertTrue("Elapsed time nanoseconds should be creater than zero",
+                timer.getElapsedNanos() > 0);
+        assertEquals(
+                "Elapsed nanos returned by stop is not the same as recorded within the timer",
+                timer.getElapsedNanos(), elapsedNanos);
+
+        // Test notes aspect of stop method
+        Object[] notes = timer.getNotes().getNotes();
+        assertEquals(2, notes.length);
+        assertEquals("1", notes[0]);
+        assertEquals(2, notes[1]);
+    }
+
+    /**
      * Test method for {@link net.digitaltsunami.tmeter.Timer#getThreadName()}.
      */
     @Test
@@ -353,11 +375,10 @@ public class TimerTest {
     /**
      * Test that output is not written if NONE format specified.
      */
-    @Ignore("This test and all others currently using getTimeLogOutput should be changed to use mocks")
     @Test
     public void testOutputNone() {
         timer.setTimeRecorder(NullTimeRecorder.getInstance());
-        String output = TestUtils.getTimerLogOutput(timer, TimerLogType.TEXT, true);
+        String output = TestUtils.getTimerLogOutput(timer, TimerLogType.NONE, true);
 
         assertEquals("Should not have written anything to file.", 0, output.length());
     }
@@ -381,7 +402,7 @@ public class TimerTest {
      */
     @Test
     public void testKeyedNotesOutputCsv() {
-        timer.setNotes(true, "k1", "a", "k2", 1);
+        timer.setKeyedNotes("k1", "a", "k2", 1);
         timer.setTimeRecorder(csvRecorder);
         String suffix = "," + "k1" + TimerNotes.KEY_VALUE_DELIMITER + "a"
                 + TimerNotes.NOTE_DELIMITER + "k2" + TimerNotes.KEY_VALUE_DELIMITER
@@ -409,7 +430,7 @@ public class TimerTest {
      */
     @Test
     public void testKeyedNotesOutputText() {
-        timer.setNotes(true, "k1", "a", "k2", 1);
+        timer.setKeyedNotes("k1", "a", "k2", 1);
         timer.setTimeRecorder(textRecorder);
         String suffix = "Notes: k1=a,k2=1";
         String output = TestUtils.getTimerLogOutput(timer, TimerLogType.TEXT, true);

@@ -18,9 +18,7 @@ __copyright_end__ */
  */
 package net.digitaltsunami.tmeter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -287,5 +285,13 @@ public class TimerBasicStatisticsTest {
         assertEquals(stats.getAverageElapsedNanos(), snapshot.getAverageElapsedNanos(), .1);
         assertEquals(stats.getStdDevElapsedNanos(), snapshot.getStdDevElapsedNanos(), .1);
         assertEquals(stats.getVarianceElapsedNanos(), snapshot.getVarianceElapsedNanos(), .1);
+    }
+    
+    /**
+     * Simple test to ensure that toString does not fail
+     */
+    @Test
+    public void testToString() {
+        assertNotNull(stats.toString());
     }
 }

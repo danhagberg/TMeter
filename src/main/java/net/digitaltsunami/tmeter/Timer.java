@@ -22,6 +22,7 @@ import java.util.Date;
 import net.digitaltsunami.tmeter.action.ActionChain;
 import net.digitaltsunami.tmeter.event.TimerStoppedEvent;
 import net.digitaltsunami.tmeter.event.TimerStoppedListener;
+import net.digitaltsunami.tmeter.record.QueuedTimeRecorder;
 import net.digitaltsunami.tmeter.record.TimeRecorder;
 
 /**
@@ -300,7 +301,7 @@ public class Timer implements Serializable {
      * This cost should be small, but for recording of very small intervals,
      * this could affect the measurements. If the notes are not needed for post
      * processing/logging, adding of notes should be done using
-     * {@link #setNotes(Object...)}.
+     * {@link #setNotes(Object...)} or {@link #setKeyedNotes(Object...)}.
      * <p>
      * <strong>Note:</strong> This method will overwrite any current notes
      * already present.
@@ -314,11 +315,11 @@ public class Timer implements Serializable {
      * 
      * @return the elapsed time in nanoseconds.
      */
-    public long stop(boolean keyed, Object... notes) {
+    public long stop(Boolean keyed, Object... notes) {
         if (status == TimerStatus.RUNNING) {
             stopTimeNanos = System.nanoTime();
             status = TimerStatus.STOPPED;
-            this.notes = new TimerNotes(keyed, notes);
+            this.notes = keyed ? new KeyedTimerNotes(notes) : new TimerNoteList(notes);
             if (timeRecorder != null) {
                 timeRecorder.record(this);
             }
@@ -512,7 +513,7 @@ public class Timer implements Serializable {
         timer.stopTimeNanos = Long.parseLong(values[4].trim());
         timer.concurrent = Integer.parseInt(values[5].trim());
         if (values.length > 6) {
-	        timer.notes = TimerNotes.parse(values[6]);
+	        timer.notes = TimerNotesParser.parse(values[6]);
         }
 
         return timer;
@@ -597,7 +598,7 @@ public class Timer implements Serializable {
      * notes have been accumulated.
      */
     public void setNotes(Object... notes) {
-        this.notes = new TimerNotes(notes);
+        this.notes = new TimerNoteList(notes);
     }
 
     /**
@@ -609,8 +610,8 @@ public class Timer implements Serializable {
      * notes already present. The notes should be set once all of the applicable
      * notes have been accumulated.
      */
-    public void setNotes(boolean keyed, Object... notes) {
-        this.notes = new TimerNotes(keyed, notes);
+    public void setKeyedNotes(Object... notes) {
+        this.notes = new KeyedTimerNotes(notes);
     }
 
     public static enum TimerStatus {
@@ -642,8 +643,8 @@ public class Timer implements Serializable {
      * <strong>NOTE:</strong> As the completion of the timer is most likely in
      * the current processing, the listener should return as quickly as possible
      * and with preferably no synchronization. For longer processing, look at
-     * the {@link ActionChain} which provides a queue for processing timers off
-     * of the main processing thread.
+     * the {@link ActionChain} or {@link QueuedTimeRecorder} which provide a queue 
+     * for processing timers off of the main processing thread.
      * 
      * @param completionListener
      *            Completion listener or null to remove current listener.

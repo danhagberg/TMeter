@@ -293,10 +293,19 @@ public class TimeTracker {
     }
 
     /**
+     * Shutdown all time tracking related processing threads.
+     */
+    public static void shutdown(boolean waitForTermination) {
+        ActionChain ac = ActionChainSingleton.getInstance();
+        if (ac != null) {
+            ac.shutdown();
+        }
+        listenForCompletion = false;
+    }
+    /**
      * Return the current post completion action processor.
      * 
      * @return
-     * @deprecated The action chain will not be returned in the next version.
      */
     public static ActionChain getActionChain() {
         return ActionChainSingleton.getInstance();
@@ -304,9 +313,6 @@ public class TimeTracker {
 
     /**
      * Set the current post completion action processor.
-     * 
-     * @deprecated This method should no longer be used. Use
-     *             {@link #addCompletionAction(TimerAction)} instead.
      */
     public static void setActionChain(ActionChain newActionChain) {
         ActionChain actionChain = ActionChainSingleton.getInstance();

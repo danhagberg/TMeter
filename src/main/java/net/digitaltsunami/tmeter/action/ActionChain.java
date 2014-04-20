@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 
 import net.digitaltsunami.tmeter.Timer;
 import net.digitaltsunami.tmeter.TimerShell;
@@ -42,6 +43,31 @@ import net.digitaltsunami.tmeter.TimerShell;
  * If any of the {@link TimerAction}s in the chain maintain state (e.g.,
  * counts), these can be reset by invoking {@link ActionChain#reset()}. This
  * will cause each action in the chain to invoke {@link TimerAction#reset()}
+ * <p>
+ * <strong>Shutdown Processing</strong>
+ * <p>
+ * As the actions are handled on a separate thread, the timers may not have been
+ * processed when the timed application is shutdown. The default processing
+ * requires that the user manually shut down the thread. Until this occurs, the
+ * virtual machine will not shut down. Alternatively, a
+ * {@link ActionChainShutdownType} can be provided that will instruct the action
+ * chain to terminate on shutdown.
+ * <p>
+ verify that this is correct with both return from main and system.exit
+ * Shutdown types and corresponding actions are:
+ * <li> {@link ActionChainShutdownType#TERMINATE_AFTER_COMPLETION}: The thread
+ * will attempt to clear its queue prior to exit.
+ * <li> {@link ActionChainShutdownType#TERMINATE_MANUALLY}: The action chain will
+ * block shutdown of the virtual machine until instructed to shutdown. Use
+ * {@link #shutdown()} or {@link #clearActions()} to manually terminate chain
+ * processing. At this point, the thread will attempt to clear its queue prior
+ * to terminating. If the queue contents should be discarded and the thread
+ * terminated immediately, invoke {@link #shutdownNow()} with a value of true to
+ * force immediate termination.
+ * <li> {@link ActionChainShutdownType#TERMINATE_IMMEDIATELY}: The thread will
+ * terminate immediately and will not complete processing. This includes actions
+ * in mid processing.
+ * <p>
  * 
  * @author dhagberg
  * 
@@ -63,10 +89,53 @@ public class ActionChain {
      */
     private TimerAction rootAction;
 
+    private final ActionChainShutdownType shutdownType;
+
+    /**
+     * Create an instance of an action chain with the default shutdown behavior,
+     * which to attempt to clear all currently queued timers prior to shutting
+     * down.
+     */
     public ActionChain() {
+        this(ActionChainShutdownType.TERMINATE_AFTER_COMPLETION);
     }
 
+    /**
+     * Create an instance of an action chain with an override of the shutdown
+     * behavior.
+     * 
+     * @param shutdownType
+     *            type of processing to complete when shutting down the action
+     *            chain.
+     */
+    public ActionChain(ActionChainShutdownType shutdownType) {
+        this.shutdownType = shutdownType;
+    }
+
+    /**
+     * Create an instance of an action chain with the default shutdown behavior,
+     * which to attempt to clear all currently queued timers prior to shutting
+     * down.
+     * 
+     * @param action
+     *            initial action in the chain.
+     */
     public ActionChain(TimerAction action) {
+        this(action, ActionChainShutdownType.TERMINATE_AFTER_COMPLETION);
+    }
+
+    /**
+     * Create an instance of an action chain with an override of the shutdown
+     * behavior.
+     * 
+     * @param action
+     *            initial action in the chain.
+     * @param shutdownType
+     *            type of processing to complete when shutting down the action
+     *            chain.
+     */
+    public ActionChain(TimerAction action, ActionChainShutdownType shutdownType) {
+        this.shutdownType = shutdownType;
         this.rootAction = action;
         createQueueProcessor();
     }
@@ -83,6 +152,9 @@ public class ActionChain {
 
     /**
      * Invokes {@link TimerAction#reset()} on each action within the chain.
+     * <p>
+     * Action chain processing will continue.  To avoid this, shutdown the 
+     * queue prior to reset.  
      */
     public void reset() {
         TimerAction tempRoot = rootAction;
@@ -92,12 +164,37 @@ public class ActionChain {
     }
 
     /**
-     * Clear the timer action chain.
+     * Shutdown processing of the action chain, discarding all timer currently
+     * on the queue.
      */
-    public void clearActions() {
+    public void shutdownNow() {
+        if (queueProcessor != null) {
+	        queueProcessor.shutdownNow();
+        }
+    }
+
+    /**
+     * Shutdown processing of the action chain with the option of finishing
+     * current tasks.
+     * <p>
+     * All timers currently on the queue may be processed depending on the
+     * {@link ActionChainShutdownType} provided when creating the action chain.
+     * See the class comments for more information regarding shutdown
+     * processing. and the virtual machine is shutdown.
+     */
+    public void shutdown() {
         Timer t = new TimerShell("EndProcesing");
         t.stop();
         submitCompletedTimer(t);
+    }
+
+    /**
+     * Clear the timer action chain. This will clear shutdown the action chain
+     * prior to clearing the actions. As the actions will be cleared, timers
+     * currently in the queue will not be processed.
+     */
+    public void clearActions() {
+        shutdownNow();
         rootAction = null;
     }
 
@@ -107,7 +204,7 @@ public class ActionChain {
      * <p>
      * This method is synchronized as it may create the root node, but other
      * methods that check the root are not synchronized to reduce context
-     * switching; therefore, the if a timer completes before a timer action is
+     * switching; therefore, if a timer completes before a timer action is
      * added, then it may be missed. This should not happen in the normal
      * execution as the setup should be completed prior to starting tasks.
      */
@@ -136,7 +233,35 @@ public class ActionChain {
      */
     private void createQueueProcessor() {
         actionQueue = new LinkedBlockingQueue<Timer>();
-        queueProcessor = Executors.newSingleThreadExecutor();
+        queueProcessor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable target) {
+                final Thread thread = new Thread(target);
+                switch (shutdownType) {
+                case TERMINATE_IMMEDIATELY:
+                    thread.setDaemon(true);
+                    break;
+
+                case TERMINATE_AFTER_COMPLETION:
+                    thread.setDaemon(true);
+                    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            System.out.printf("In shutdown hook.  %d remaining in queue\n", actionQueue.size());
+                            ActionChain.this.shutdown();
+                            try { thread.join(); } catch (InterruptedException ignore) { }
+                        }
+                    }));
+                    break;
+
+                case TERMINATE_MANUALLY: // Included for completeness.
+                default:
+                    break;
+                }
+                return thread;
+            }
+        });
         queueProcessor.execute(new Runnable() {
 
             @Override
@@ -148,7 +273,7 @@ public class ActionChain {
                         if (timer instanceof TimerShell) {
                             // Shut down queue processor if TimerShell is placed
                             // on queue.
-                            queueProcessor.shutdown();
+                            queueProcessor.shutdownNow();
                             return;
                         }
                     } catch (InterruptedException e) {
@@ -168,6 +293,7 @@ public class ActionChain {
 
     /**
      * Return a set of all actions currently in the chain.
+     * 
      * @return
      */
     public Set<TimerAction> getActions() {

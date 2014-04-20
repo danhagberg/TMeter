@@ -118,6 +118,16 @@ public class TimerStatsActionTest {
         assertEquals(2, live.getCount());
         assertEquals(1, snapshot.getCount());
     }
+    /**
+     * Test method for
+     * {@link net.digitaltsunami.tmeter.action.TimerStatsAction#getTimerStatisticsSnapshot(String)}
+     * .
+     */
+    @Test
+    public void testGetTimerStatisticsSnapshotForTaskNotFound() {
+        TimerBasicStatistics snapshot = action.getTimerStatisticsSnapshot(TEST_TIMER);
+        assertNull("Should have returned null as timer has not been processed", snapshot);
+    }
 
     /**
      * Test method for
