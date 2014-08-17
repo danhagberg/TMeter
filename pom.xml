@@ -76,7 +76,7 @@
 	<distributionManagement>
 		<site>
 			<id>www.digitaltsunami.net</id>
-			<url>scpexe://digitaltsunami.net/home/dhagberg/public_html/projects/tmeter/site</url>
+			<url>scp://digitaltsunami.net/home/dhagberg/public_html/projects/tmeter/site</url>
 		</site>
 	</distributionManagement>
 	<build>
@@ -96,7 +96,14 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-site-plugin</artifactId>
-				<version>3.0-beta-2</version>
+				<version>3.3</version>
+                <dependencies>
+                    <dependency><!-- add support for ssh/scp -->
+                        <groupId>org.apache.maven.wagon</groupId>
+                        <artifactId>wagon-ssh</artifactId>
+                        <version>1.0</version>
+                    </dependency>
+                </dependencies>
 				<executions>
 					<execution>
 						<id>attach-descriptor</id>

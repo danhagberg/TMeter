@@ -30,7 +30,7 @@ public class TimerShell extends Timer {
     private static final long serialVersionUID = 1L;
 
     public TimerShell(String taskName) {
-        super(taskName, false, null);
+        super(taskName, false, null, null);
     }
 
     @Override

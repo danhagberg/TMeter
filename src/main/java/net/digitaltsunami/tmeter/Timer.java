@@ -22,6 +22,7 @@ import java.util.Date;
 import net.digitaltsunami.tmeter.action.ActionChain;
 import net.digitaltsunami.tmeter.event.TimerStoppedEvent;
 import net.digitaltsunami.tmeter.event.TimerStoppedListener;
+import net.digitaltsunami.tmeter.level.TimerLevel;
 import net.digitaltsunami.tmeter.record.QueuedTimeRecorder;
 import net.digitaltsunami.tmeter.record.TimeRecorder;
 
@@ -165,6 +166,11 @@ public class Timer implements Serializable {
     private TimerNotes notes;
 
     /**
+     * Optional level for this timer. May be used to filter or control processing of timers.
+     */
+    private final TimerLevel timerLevel;
+
+    /**
 	 * Listener to notify when this timer is stopped.
 	 */
     private transient TimerStoppedListener completionListener;
@@ -172,25 +178,60 @@ public class Timer implements Serializable {
     /**
      * Construct an instance of Timer for the given task and start the timer.
      * 
-     * @param taskName
+     * @param taskName name of task being timed. 
      */
     public Timer(String taskName) {
-        this(taskName, false, null);
+        this(taskName, false, null, null);
+    }
+    
+    /**
+     * Construct an instance of Timer for the given task and start the timer.
+     * 
+     * @param taskName name of task being timed. 
+     * @param timerLevel filter level of this timer.
+     */
+    public Timer(String taskName, TimerLevel timerLevel) {
+        this(taskName, false, null, timerLevel);
     }
 
     /**
      * Construct an instance of Timer for the given task and optionally delay
      * the start of the timer.
      * 
-     * @param taskName
-     * @param delayStart
-     * @param logType
+     * @param taskName name of task being timed. 
+     * @param delayStart true if starting of timer should be delayed.  Will not start recording until {@link #start()} is invoked.
+     * @param timerLevel filter level of this timer.
+     */
+    public Timer(String taskName, boolean delayStart, TimerLevel timerLevel) {
+        this(taskName, delayStart, null, timerLevel);
+    }
+    
+    /**
+     * Construct an instance of Timer for the given task and optionally delay
+     * the start of the timer.
+     * 
+     * @param taskName name of task being timed. 
+     * @param delayStart true if starting of timer should be delayed.  Will not start recording until {@link #start()} is invoked.
+     * @param timeRecorder instance used to record this timer upon completion.
      */
     public Timer(String taskName, boolean delayStart, TimeRecorder timeRecorder) {
+        this(taskName, delayStart, timeRecorder, null);
+    }
+    /**
+     * Construct an instance of Timer for the given task and optionally delay
+     * the start of the timer.
+     * 
+     * @param taskName name of task being timed. 
+     * @param delayStart true if starting of timer should be delayed.  Will not start recording until {@link #start()} is invoked.
+     * @param timeRecorder instance used to record this timer upon completion.
+     * @param timerLevel filter level of this timer.
+     */
+    public Timer(String taskName, boolean delayStart, TimeRecorder timeRecorder, TimerLevel timerLevel) {
         this.status = TimerStatus.INITIALIZED;
         this.taskName = taskName;
         this.timeRecorder = timeRecorder;
         this.threadName = Thread.currentThread().getName();
+        this.timerLevel = timerLevel;
         if (!delayStart) {
             start();
         }
@@ -199,12 +240,24 @@ public class Timer implements Serializable {
     /**
      * Used by internal method constructing object from CSV file.
      * 
-     * @param taskName
-     * @param threadName
+     * @param taskName name of task being timed. 
+     * @param threadName name of thread in which timer was created.
      */
     private Timer(String taskName, String threadName) {
+        this(taskName, threadName, null);
+    }
+    
+    /**
+     * Used by internal method constructing object from CSV file.
+     * 
+     * @param taskName name of task being timed. 
+     * @param threadName name of thread in which timer was created.
+     * @param timerLevel filter level of this timer.
+     */
+    private Timer(String taskName, String threadName, TimerLevel timerLevel) {
         this.taskName = taskName;
         this.threadName = threadName;
+        this.timerLevel = timerLevel;
     }
 
     /**
@@ -677,5 +730,13 @@ public class Timer implements Serializable {
             break;
         }
         return status;
+    }
+
+    /**
+     * Return the timer level associated with this timer. May be null
+     * @return the timerLevel or null if no level assigned to timer.
+     */
+    public TimerLevel getTimerLevel() {
+        return timerLevel;
     }
 }

@@ -18,10 +18,7 @@ __copyright_end__ */
  */
 package net.digitaltsunami.tmeter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -30,6 +27,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import net.digitaltsunami.tmeter.Timer.TimerStatus;
+import net.digitaltsunami.tmeter.level.TimerThreshold;
 import net.digitaltsunami.tmeter.record.ConsoleTimeRecorder;
 import net.digitaltsunami.tmeter.record.NullTimeRecorder;
 
@@ -76,6 +74,30 @@ public class TimerTest {
     public void testTimerStringBoolean() {
         Timer notStarted = new Timer(TASK_NAME, true, NullTimeRecorder.getInstance());
         assertEquals(TimerStatus.INITIALIZED, notStarted.getStatus());
+        assertNull(notStarted.getTimerLevel());
+    }
+    
+    /**
+     * Test method for
+     * {@link net.digitaltsunami.tmeter.Timer#Timer(java.lang.String)}.
+     */
+    @Test
+    public void testTimerStringTimerLevel() {
+        Timer newTimer = new Timer(TASK_NAME, TimerThreshold.MEDIUM);
+        assertEquals(TASK_NAME, newTimer.getTaskName());
+        assertEquals(TimerThreshold.MEDIUM, newTimer.getTimerLevel());
+    }
+
+    /**
+     * Test method for
+     * {@link net.digitaltsunami.tmeter.Timer#Timer(java.lang.String, boolean)}
+     * .
+     */
+    @Test
+    public void testTimerStringBooleanTimerLevel() {
+        Timer notStarted = new Timer(TASK_NAME, true, TimerThreshold.COURSE);
+        assertEquals(TimerStatus.INITIALIZED, notStarted.getStatus());
+        assertEquals(TimerThreshold.COURSE, notStarted.getTimerLevel());
     }
 
     /**

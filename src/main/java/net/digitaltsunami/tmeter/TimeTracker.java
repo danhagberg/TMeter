@@ -25,6 +25,9 @@ import net.digitaltsunami.tmeter.action.ActionChain;
 import net.digitaltsunami.tmeter.action.TimerAction;
 import net.digitaltsunami.tmeter.event.TimerStoppedEvent;
 import net.digitaltsunami.tmeter.event.TimerStoppedListener;
+import net.digitaltsunami.tmeter.level.TimerLevel;
+import net.digitaltsunami.tmeter.level.TimerLevelCollection;
+import net.digitaltsunami.tmeter.level.TimerLevelSet;
 import net.digitaltsunami.tmeter.record.NullTimeRecorder;
 import net.digitaltsunami.tmeter.record.TimeRecorder;
 
@@ -124,6 +127,17 @@ public class TimeTracker {
     private static boolean listenForCompletion;
 
     /**
+     * Default {@link TimerLevel} used when creating {@link Timer} instances if
+     * one is not provided.
+     */
+    private static final TimerLevel DEFAULT_LEVEL = null;
+    /**
+     * Current set of timer levels that are active. If none provided, then all
+     * timer levels are active by default.
+     */
+    private static final TimerLevelCollection filter = new TimerLevelSet();
+
+    /**
      * No instances of TimeTracker
      */
     private TimeTracker() {
@@ -137,20 +151,35 @@ public class TimeTracker {
      * <p>
      * If timing is disabled, an instance of {@link TimerShell} will be returned
      * so that the timing code can be left in place.
+     * <p>
+     * If a timer level is provided, it will be checked against the current
+     * filter. If not enabled, then an instance of {@link TimerShell} will be
+     * returned.
      * 
      * @param taskName
      *            Name used to represent a given task.
+     * @param level
+     *            {@link TimerLevel} of timer requested. Will be used to
+     *            determine if the timer is enabled for the request.
      * @return instance of {@link Timer} configured based on current settings.
      * @see #setTrackingDisabled(boolean)
      */
-    public static Timer startRecording(String taskName) {
+    public static Timer startRecording(TimerLevel level, String taskName) {
         // If not currently tracking time, return a shell so that invoking code
         // does not have to change.
         if (trackingDisabled) {
             return dummy;
         }
 
-        Timer timer = new Timer(taskName, true, defaultTimeRecorder);
+        // If a level was not provided, then skip over filtering for this timer,
+        // otherwise ensure that the level active.
+        if (level != DEFAULT_LEVEL) {
+            if (!filter.isEnabled(level)) {
+                return dummy;
+            }
+        }
+
+        Timer timer = new Timer(taskName, true, defaultTimeRecorder, level);
         // Do all time intensive settings prior to starting time
         // keeping list
         if (keepList) {
@@ -178,6 +207,23 @@ public class TimeTracker {
         }
         timer.start();
         return timer;
+    }
+
+    /**
+     * Create and configure a {@link Timer} instance as applicable. All
+     * configuration settings are done prior to starting the timer to reduce the
+     * effect of the overhead in the timing results.
+     * <p>
+     * If timing is disabled, an instance of {@link TimerShell} will be returned
+     * so that the timing code can be left in place.
+     * 
+     * @param taskName
+     *            Name used to represent a given task.
+     * @return instance of {@link Timer} configured based on current settings.
+     * @see #setTrackingDisabled(boolean)
+     */
+    public static Timer startRecording(String taskName) {
+        return startRecording(DEFAULT_LEVEL, taskName);
     }
 
     /**
@@ -283,10 +329,14 @@ public class TimeTracker {
     }
 
     /**
-     * Set tracking to enabled/disabled. If so, a {@link TimerShell} will be
-     * returned by {@link #startRecording(String)}.
+     * Set tracking to enabled/disabled. If disabled, a {@link TimerShell} will
+     * be returned by {@link #startRecording(String)}.
      * <p>
      * Default is enabled.
+     * <p>
+     * If tracking is disabled, then all {@link TimerLevel}s enabled for this
+     * session are disabled as well. If tracking is re-enabled, then the current
+     * set of enabled timer levels will be become active.
      */
     public static void setTrackingDisabled(boolean trackingDisabled) {
         TimeTracker.trackingDisabled = trackingDisabled;
@@ -302,6 +352,7 @@ public class TimeTracker {
         }
         listenForCompletion = false;
     }
+
     /**
      * Return the current post completion action processor.
      * 
@@ -345,6 +396,82 @@ public class TimeTracker {
      */
     public static Timer[] getCurrentTimers() {
         return timerList.toArray(new Timer[0]);
+    }
+
+    /**
+     * Enable a {@link TimerLevel} for recording. All subsequent timer requests
+     * enabled for this level will start a timer recording.
+     * 
+     * @param level
+     *            to enable for recording.
+     * @return timer level currently in filter if matches new level or null if
+     *         no matching timer. See {@link TimerLevelCollection} for
+     *         information on possible return values.
+     * @see TimerLevelCollection
+     * @see #setTrackingDisabled(boolean)
+     */
+    public static TimerLevel enableTimerLevel(TimerLevel level) {
+        return filter.addLevel(level);
+    }
+
+    /**
+     * Enable all provided {@link TimerLevel}s for recording. All subsequent
+     * timer requests enabled for these levels will start a timer recording.
+     * 
+     * @param levels
+     *            to enable for recording.
+     * @return
+     * @see TimerLevelCollection
+     * @see #setTrackingDisabled(boolean)
+     */
+    public static void enableTimerLevels(TimerLevel... levels) {
+        filter.addLevels(levels);
+    }
+
+    /**
+     * Disable a {@link TimerLevel} for recording. Subsequent requests will not
+     * be enabled for this level and recording will not be started.
+     * 
+     * @param level
+     *            to disable timer recording.
+     * @return true if level matched an existing entry and was removed.
+     * @see TimerLevelCollection
+     * @see #setTrackingDisabled(boolean)
+     */
+    public static boolean disableTimerLevel(TimerLevel level) {
+        return filter.removeLevel(level);
+    }
+
+    /**
+     * Disable provided {@link TimerLevel}s for recording. Subsequent requests
+     * will not be enabled for these levels and recording will not be started.
+     * 
+     * @param levels
+     *            to disable timer recording.
+     * @return true if any level matched an existing entry and was removed.
+     * @see TimerLevelCollection
+     * @see #setTrackingDisabled(boolean)
+     */
+    public static boolean disableTimerLevels(TimerLevel... levels) {
+        boolean disabled = false;
+        for (TimerLevel level : levels) {
+            disabled |= filter.removeLevel(level);
+        }
+        return disabled;
+    }
+
+    /**
+     * Disable all {@link TimerLevel}s for recording. Subsequent requests will
+     * not be enabled for any levels and recording will not be started.
+     * <p>
+     * Note: This does non include timers with out a timer level as those are
+     * not affected by the filter.
+     * 
+     * @see TimerLevelCollection
+     * @see #setTrackingDisabled(boolean)
+     */
+    public static void clearTimerLevels() {
+        filter.clear();
     }
 
     /**
