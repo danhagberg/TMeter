@@ -73,12 +73,14 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+    <!--
 	<distributionManagement>
 		<site>
 			<id>www.digitaltsunami.net</id>
 			<url>scp://digitaltsunami.net/home/dhagberg/public_html/projects/tmeter/site</url>
 		</site>
 	</distributionManagement>
+    -->
 	<build>
         <resources>
             <resource>
