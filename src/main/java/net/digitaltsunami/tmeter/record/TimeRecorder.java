@@ -18,4 +18,9 @@ public interface TimeRecorder {
      * @param timer Completed timer to record.
      */
     void record(Timer timer);
+    
+    /**
+     * Peform any actions necessary prior to shutdown.
+     */
+    void prepareForShutdown();
 }

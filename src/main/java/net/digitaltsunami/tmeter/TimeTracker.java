@@ -15,19 +15,13 @@
 __copyright_end__ */
 package net.digitaltsunami.tmeter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import net.digitaltsunami.tmeter.action.ActionChain;
+import net.digitaltsunami.tmeter.action.ActionChainShutdownType;
 import net.digitaltsunami.tmeter.action.TimerAction;
-import net.digitaltsunami.tmeter.event.TimerStoppedEvent;
-import net.digitaltsunami.tmeter.event.TimerStoppedListener;
 import net.digitaltsunami.tmeter.level.TimerLevel;
 import net.digitaltsunami.tmeter.level.TimerLevelCollection;
-import net.digitaltsunami.tmeter.level.TimerLevelSet;
 import net.digitaltsunami.tmeter.record.NullTimeRecorder;
 import net.digitaltsunami.tmeter.record.TimeRecorder;
 
@@ -48,10 +42,13 @@ import net.digitaltsunami.tmeter.record.TimeRecorder;
  * batches. This will reduce the memory requirements of the timer framework
  * </ul>
  * <p>
- * Logging - Logging can be enabled to direct the timers to log on completion.
- * Logging can be directed to the console or a file. Current logging styles are
- * text and csv. See {@link Timer#toString()} and {@link Timer#toCsv()} for
- * formats.
+ * Recording Compeletion - Recording of timer results is provided using
+ * {@link TimeRecorder} specified via
+ * {@link #setDefaultTimeRecorder(TimeRecorder)}. The default is set to
+ * {@link NullTimeRecorder}, which will not record results. Logging can be
+ * enabled to direct the timers to log on completion. Logging can be directed to
+ * the console or a file. Current logging styles are text and csv. See
+ * {@link Timer#toString()} and {@link Timer#toCsv()} for formats.
  * <p>
  * Action chain - Post processing of completed timers can be taken out of the
  * processing thread by use of an {@link ActionChain}. The Action Chain provides
@@ -74,74 +71,43 @@ import net.digitaltsunami.tmeter.record.TimeRecorder;
  * 
  */
 public class TimeTracker {
-    /**
-     * Indicates whether or not we are keeping a list of all timers.
-     */
-    private static boolean keepList;
-    /**
-     * Indicates whether or not we are keeping track of concurrent task count.
-     */
-    private static boolean trackConcurrent;
-
-    /**
-     * Indicates how to record the timer when it is stopped. This setting will
-     * be used as a default to set the corresponding entry on each timer as it
-     * is created.
-     */
-    private static TimeRecorder defaultTimeRecorder = NullTimeRecorder.getInstance();
-
-    /**
-     * List of all timers created since the keepList value was set to true.
-     */
-    private static final List<Timer> timerList =
-            Collections.synchronizedList(new ArrayList<Timer>());
-
-    /**
-     * Current count of timers by task name.
-     */
-    private static final ConcurrentHashMap<String, AtomicInteger> concurrentMap =
-            new ConcurrentHashMap<String, AtomicInteger>();
-
-    /**
-     * Singleton {@link Timer} used when time tracking is turned off.
-     */
-    private static final Timer dummy = new TimerShell("TimerShellTask");
-
-    /**
-     * Indicates if tracking is disabled. If so, a {@link TimerShell} will be
-     * returned by {@link #startRecording(String)}.
-     */
-    private static boolean trackingDisabled;
-
-    /**
-     * Listener for {@link TimerStoppedEvent}. Will drive any configured
-     * completion processing.
-     */
-    private static final TimerStoppedEventHandler completionEventListener =
-            new TimerStoppedEventHandler();
-
-    /**
-     * Indicates whether or not to register for the completion event when
-     * creating new timers.
-     */
-    private static boolean listenForCompletion;
-
-    /**
-     * Default {@link TimerLevel} used when creating {@link Timer} instances if
-     * one is not provided.
-     */
-    private static final TimerLevel DEFAULT_LEVEL = null;
-    /**
-     * Current set of timer levels that are active. If none provided, then all
-     * timer levels are active by default.
-     */
-    private static final TimerLevelCollection filter = new TimerLevelSet();
+    private static final NamedTimeTracker common = new NamedTimeTracker("_TT_COMMON_");
+    private static final ConcurrentHashMap<String, NamedTimeTracker> timeTrackers = new ConcurrentHashMap<String, NamedTimeTracker>();
 
     /**
      * No instances of TimeTracker
      */
     private TimeTracker() {
         // No instances
+    }
+
+    /**
+     * Retrieve a {@link NamedTimeTracker} specified by the provided name. If no
+     * entry is found for that name, then one will be created and stored under
+     * that name for future retrieval.
+     * 
+     * @param name
+     *            Name of time tracker instance to retrieve.
+     * @return instance of {@link NamedTimeTracker} stored under the name
+     *         provided.
+     * 
+     * @ThreadSafe
+     */
+    public static NamedTimeTracker named(String name) {
+        NamedTimeTracker tracker = timeTrackers.get(name);
+        if (tracker == null) {
+            // Task not found in list. Create a new counter
+            tracker = new NamedTimeTracker(name);
+            // Place it in the map
+            NamedTimeTracker existing = timeTrackers.putIfAbsent(name,
+                    tracker);
+            // If the same entry was not returned, another thread created
+            // during setup. Use the existing entry.
+            if (existing != null && existing != tracker) {
+                tracker = existing;
+            }
+        }
+        return tracker;
     }
 
     /**
@@ -165,48 +131,7 @@ public class TimeTracker {
      * @see #setTrackingDisabled(boolean)
      */
     public static Timer startRecording(TimerLevel level, String taskName) {
-        // If not currently tracking time, return a shell so that invoking code
-        // does not have to change.
-        if (trackingDisabled) {
-            return dummy;
-        }
-
-        // If a level was not provided, then skip over filtering for this timer,
-        // otherwise ensure that the level active.
-        if (level != DEFAULT_LEVEL) {
-            if (!filter.isEnabled(level)) {
-                return dummy;
-            }
-        }
-
-        Timer timer = new Timer(taskName, true, defaultTimeRecorder, level);
-        // Do all time intensive settings prior to starting time
-        // keeping list
-        if (keepList) {
-            timerList.add(timer);
-        }
-        // tracking concurrent
-        if (trackConcurrent) {
-            AtomicInteger concurrent = concurrentMap.get(taskName);
-            if (concurrent == null) {
-                // Task not found in list. Create a new counter
-                concurrent = new AtomicInteger();
-                // Place it in the map
-                AtomicInteger entry = concurrentMap.putIfAbsent(taskName,
-                        concurrent);
-                // If the same entry was not returned, another thread created
-                // during setup. Use the existing entry.
-                if (entry != null && entry != concurrent) {
-                    concurrent = entry;
-                }
-            }
-            timer.setConcurrent(concurrent.incrementAndGet());
-        }
-        if (listenForCompletion) {
-            timer.setCompletionListener(completionEventListener);
-        }
-        timer.start();
-        return timer;
+        return common.startRecording(level, taskName);
     }
 
     /**
@@ -223,7 +148,7 @@ public class TimeTracker {
      * @see #setTrackingDisabled(boolean)
      */
     public static Timer startRecording(String taskName) {
-        return startRecording(DEFAULT_LEVEL, taskName);
+        return common.startRecording(taskName);
     }
 
     /**
@@ -232,7 +157,7 @@ public class TimeTracker {
      * @return the keepList
      */
     public static boolean isKeepList() {
-        return keepList;
+        return common.isKeepList();
     }
 
     /**
@@ -242,7 +167,7 @@ public class TimeTracker {
      *            True to keep a list of timers, otherwise false.
      */
     public static void setKeepList(boolean keepList) {
-        TimeTracker.keepList = keepList;
+        common.setKeepList(keepList);
     }
 
     /**
@@ -251,7 +176,7 @@ public class TimeTracker {
      * @return the trackConcurrent
      */
     public static boolean isTrackConcurrent() {
-        return trackConcurrent;
+        return common.isTrackConcurrent();
     }
 
     /**
@@ -261,22 +186,7 @@ public class TimeTracker {
      *            True to keep track of concurrent task count, otherwise false.
      */
     public static void setTrackConcurrent(boolean trackConcurrent) {
-        TimeTracker.trackConcurrent = trackConcurrent;
-        // The decrement concurrent processing occurs in the listener, so it
-        // must be enabled if tracking is enabled. Leave on if already on
-        listenForCompletion = (listenForCompletion | trackConcurrent);
-    }
-
-    /**
-     * Decrement the concurrent count for the provided task name.
-     * 
-     * @param taskName
-     */
-    private static void decrementConcurrent(String taskName) {
-        AtomicInteger current = concurrentMap.get(taskName);
-        if (current != null) {
-            current.decrementAndGet();
-        }
+        common.setTrackConcurrent(trackConcurrent);
     }
 
     /**
@@ -284,7 +194,7 @@ public class TimeTracker {
      *         corresponding field when creating {@link Timer}s
      */
     public static TimeRecorder getDefaultTimeRecorder() {
-        return defaultTimeRecorder;
+        return common.getDefaultTimeRecorder();
     }
 
     /**
@@ -297,7 +207,7 @@ public class TimeTracker {
      *            type of logging to occur on timer completion.
      */
     public static void setDefaultTimeRecorder(TimeRecorder defaultTimeRecorder) {
-        TimeTracker.defaultTimeRecorder = defaultTimeRecorder;
+        common.setDefaultTimeRecorder(defaultTimeRecorder);
     }
 
     /**
@@ -313,9 +223,7 @@ public class TimeTracker {
      * <p>
      */
     public static void clear() {
-        timerList.clear();
-        concurrentMap.clear();
-        ActionChainSingleton.getInstance().reset();
+        common.clear();
     }
 
     /**
@@ -325,7 +233,7 @@ public class TimeTracker {
      * @return
      */
     public static boolean isTrackingDisabled() {
-        return trackingDisabled;
+        return common.isTrackingDisabled();
     }
 
     /**
@@ -337,20 +245,31 @@ public class TimeTracker {
      * If tracking is disabled, then all {@link TimerLevel}s enabled for this
      * session are disabled as well. If tracking is re-enabled, then the current
      * set of enabled timer levels will be become active.
+     * 
+     * @param trackingDisabled
+     *            true if time tracking should be disabled.
      */
     public static void setTrackingDisabled(boolean trackingDisabled) {
-        TimeTracker.trackingDisabled = trackingDisabled;
+        common.setTrackingDisabled(trackingDisabled);
     }
 
     /**
-     * Shutdown all time tracking related processing threads.
+     * Shutdown all time tracking related processing threads connected to the
+     * common time tracker.
      */
-    public static void shutdown(boolean waitForTermination) {
-        ActionChain ac = ActionChainSingleton.getInstance();
-        if (ac != null) {
-            ac.shutdown();
+    public static void shutdown() {
+        common.shutdown();
+    }
+
+    /**
+     * Shutdown all {@link NamedTimeTracker} instances, including the common one
+     * maintained by TimeTracker.
+     */
+    public static void shutdownAllTimeTrackers() {
+        for (NamedTimeTracker timeTracker : TimeTracker.timeTrackers.values()) {
+            timeTracker.shutdown();
         }
-        listenForCompletion = false;
+        common.shutdown();
     }
 
     /**
@@ -359,21 +278,14 @@ public class TimeTracker {
      * @return
      */
     public static ActionChain getActionChain() {
-        return ActionChainSingleton.getInstance();
+        return common.getActionChain();
     }
 
     /**
      * Set the current post completion action processor.
      */
     public static void setActionChain(ActionChain newActionChain) {
-        ActionChain actionChain = ActionChainSingleton.getInstance();
-        for (TimerAction action : newActionChain.getActions()) {
-            actionChain.addAction(action);
-        }
-
-        // Activate the timer completion listener as this is where interaction
-        // with the action processor occurs.
-        listenForCompletion = true;
+        common.setActionChain(newActionChain);
     }
 
     /**
@@ -383,8 +295,7 @@ public class TimeTracker {
      * @param action
      */
     public static void addCompletionAction(TimerAction action) {
-        ActionChainSingleton.getInstance().addAction(action);
-        listenForCompletion = true;
+        common.addCompletionAction(action);
     }
 
     /**
@@ -395,7 +306,7 @@ public class TimeTracker {
      * @return a snapshot of the current list of timers.
      */
     public static Timer[] getCurrentTimers() {
-        return timerList.toArray(new Timer[0]);
+        return common.getCurrentTimers();
     }
 
     /**
@@ -411,7 +322,7 @@ public class TimeTracker {
      * @see #setTrackingDisabled(boolean)
      */
     public static TimerLevel enableTimerLevel(TimerLevel level) {
-        return filter.addLevel(level);
+        return common.enableTimerLevel(level);
     }
 
     /**
@@ -425,7 +336,7 @@ public class TimeTracker {
      * @see #setTrackingDisabled(boolean)
      */
     public static void enableTimerLevels(TimerLevel... levels) {
-        filter.addLevels(levels);
+        common.enableTimerLevels(levels);
     }
 
     /**
@@ -439,7 +350,7 @@ public class TimeTracker {
      * @see #setTrackingDisabled(boolean)
      */
     public static boolean disableTimerLevel(TimerLevel level) {
-        return filter.removeLevel(level);
+        return common.disableTimerLevel(level);
     }
 
     /**
@@ -453,11 +364,7 @@ public class TimeTracker {
      * @see #setTrackingDisabled(boolean)
      */
     public static boolean disableTimerLevels(TimerLevel... levels) {
-        boolean disabled = false;
-        for (TimerLevel level : levels) {
-            disabled |= filter.removeLevel(level);
-        }
-        return disabled;
+        return common.disableTimerLevels(levels);
     }
 
     /**
@@ -471,25 +378,7 @@ public class TimeTracker {
      * @see #setTrackingDisabled(boolean)
      */
     public static void clearTimerLevels() {
-        filter.clear();
-    }
-
-    /**
-     * Listener for timers being stopped.
-     * 
-     * @author dhagberg
-     */
-    static class TimerStoppedEventHandler implements TimerStoppedListener {
-        @Override
-        public void timerStopped(TimerStoppedEvent event) {
-            Timer timer = event.getTimer();
-            if (TimeTracker.isTrackConcurrent()) {
-                TimeTracker.decrementConcurrent(timer.getTaskName());
-            }
-            if (listenForCompletion) {
-                ActionChainSingleton.getInstance().submitCompletedTimer(timer);
-            }
-        }
+        common.clearTimerLevels();
     }
 
     /**
@@ -497,17 +386,6 @@ public class TimeTracker {
      * processing and then terminate.
      */
     public static void clearActionChain() {
-        ActionChainSingleton.getInstance().clearActions();
-    }
-
-    /**
-     * Singleton provider for lazy instantiation of ActionChain
-     */
-    private static class ActionChainSingleton {
-        private static ActionChain actionChainInstance = new ActionChain();
-
-        static ActionChain getInstance() {
-            return actionChainInstance;
-        }
+        common.clearActionChain();
     }
 }

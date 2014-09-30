@@ -14,5 +14,10 @@ public class CountTimeRecorder implements TimeRecorder {
     public int getCount() {
         return count;
     }
+
+    @Override
+    public void prepareForShutdown() {
+        // No-op
+    }
     
 }

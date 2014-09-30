@@ -17,4 +17,9 @@ public class NullTimeRecorder implements TimeRecorder {
         // No-op
     }
 
+    @Override
+    public void prepareForShutdown() {
+        // No-op
+    }
+
 }

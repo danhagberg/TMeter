@@ -164,7 +164,7 @@ public class ActionChain {
     }
 
     /**
-     * Shutdown processing of the action chain, discarding all timer currently
+     * Shutdown processing of the action chain, discarding all timers currently
      * on the queue.
      */
     public void shutdownNow() {
@@ -248,7 +248,7 @@ public class ActionChain {
 
                         @Override
                         public void run() {
-                            System.out.printf("In shutdown hook.  %d remaining in queue\n", actionQueue.size());
+                            // System.out.printf("In shutdown hook.  %d remaining in queue\n", actionQueue.size());
                             ActionChain.this.shutdown();
                             try { thread.join(); } catch (InterruptedException ignore) { }
                         }

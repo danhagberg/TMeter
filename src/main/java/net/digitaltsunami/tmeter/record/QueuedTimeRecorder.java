@@ -5,6 +5,7 @@ import net.digitaltsunami.tmeter.TimerShell;
 import net.digitaltsunami.tmeter.action.ActionChain;
 import net.digitaltsunami.tmeter.action.ActionChainShutdownType;
 import net.digitaltsunami.tmeter.action.TimeRecorderAction;
+import net.digitaltsunami.tmeter.action.TimerAction;
 
 /**
  * Time recorder that persists timers in a separate thread. This recorder does
@@ -49,6 +50,11 @@ public class QueuedTimeRecorder implements TimeRecorder {
      */
     public void shutdown() {
         chain.shutdown();
+    }
+
+    @Override
+    public void prepareForShutdown() {
+        shutdown();
     }
 
 }

@@ -38,16 +38,38 @@ public abstract class TimerAction {
      * <p>
      * No guarantee as to the order in which the actions will be executed.
      * 
-     * @param action
+     * @param action new action to add to chain. Cannot be null. 
      * @return provided action so that they may be chained without creating a
      *         local instance.
      */
-    public TimerAction addAction(TimerAction action) {
+    public final TimerAction addAction(TimerAction action) {
+        // The next couple of checks are to prevent cyclic graph.
+        if (action == this) {
+            // Same action.  Just return.
+            return action;
+        }
+        if (action.nextAction != null) {
+            // If the new action already has a next acton, walk the 
+            // chain to see if it would create a cyclic graph
+            for (TimerAction curr = action.nextAction; curr != null; curr = curr.nextAction)  {
+                if (curr == action || curr == this) {
+                    return action;
+                }
+            }
+            
+        }
+        
         if (nextAction != null) {
+            // walk the chain to ensure no cyclic graph created.
+            for (TimerAction curr = nextAction; curr != null; curr = curr.nextAction)  {
+                if (curr == action) {
+                    return action;
+                }
+            }
             // If there is already a next action, insert the new action between
             // the two.
             action.nextAction = nextAction;
-        }
+        } 
         nextAction = action;
         return action;
     }

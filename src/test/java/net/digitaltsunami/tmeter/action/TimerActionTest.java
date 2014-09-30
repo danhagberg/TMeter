@@ -78,6 +78,33 @@ public class TimerActionTest {
      * .
      */
     @Test
+    public void testAddDuplicateAction() {
+        Timer timer = new Timer("TEST");
+        TimerActionCount action2 = new TimerActionCount();
+        TimerActionCount action3 = new TimerActionCount();
+        action.addAction(action2);
+        action2.addAction(action3);
+        action.addAction(action3);
+        action3.addAction(action);
+        action2.addAction(action);
+        action.addAction(action);
+        int count = 0;
+        for (TimerAction curr = action; curr != null && count < 4; curr = curr.nextAction) {
+            count++;
+        }
+        assertEquals(3, count);
+        action.timerComplete(timer);
+        assertTrue("Timer was not processed for root action", listOfTimers.contains(timer));
+        assertEquals(1, action2.getCallCount());
+        assertEquals(1, action3.getCallCount());
+    }
+
+    /**
+     * Test method for
+     * {@link net.digitaltsunami.tmeter.action.TimerAction#addAction(net.digitaltsunami.tmeter.action.TimerAction)}
+     * .
+     */
+    @Test
     public void testAddActionInsert() {
         TimerAction action2 = new TimerActionCount();
         TimerAction action3 = new TimerActionLast();

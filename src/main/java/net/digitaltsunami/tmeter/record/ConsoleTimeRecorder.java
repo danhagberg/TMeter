@@ -4,6 +4,9 @@ import net.digitaltsunami.tmeter.TimerLogType;
 
 /**
  * Record all timer output to console (stdout). 
+ * <p>
+ * Output of timer data is specfied by providing a {@link TimerLogType} value,
+ * with the default being {@link TimerLogType#TEXT}
  * @author dhagberg
  *
  */
@@ -21,6 +24,14 @@ public class ConsoleTimeRecorder extends FileTimeRecorder {
      */
     public ConsoleTimeRecorder(TimerLogType logType) {
         super(System.out, logType);
+    }
+
+    /* (non-Javadoc)
+     * @see net.digitaltsunami.tmeter.record.FileTimeRecorder#prepareForShutdown()
+     */
+    @Override
+    public void prepareForShutdown() {
+        // We do not want to clode the file for System.out, so don't call super.
     }
 
 }
