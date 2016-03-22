@@ -8,7 +8,6 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-import static com.sun.tools.internal.xjc.reader.gbind.Expression.EPSILON;
 import static org.junit.Assert.*;
 
 /**
