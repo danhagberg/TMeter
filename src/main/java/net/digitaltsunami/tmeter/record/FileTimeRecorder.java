@@ -68,7 +68,7 @@ public class FileTimeRecorder implements TimeRecorder {
      *            format used to write timers to output stream.
      * @throws FileNotFoundException if provided file could not be opened.
      * 
-     * TODO: Not yet ready as there is no way to gaurantee closure of file.
+     * TODO: Not yet ready as there is no way to guarantee closure of file.
      */
     private FileTimeRecorder(String fileName, TimerLogType logType) throws FileNotFoundException {
         super();

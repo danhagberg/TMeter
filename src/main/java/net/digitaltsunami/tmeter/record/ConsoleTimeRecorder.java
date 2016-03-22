@@ -31,7 +31,7 @@ public class ConsoleTimeRecorder extends FileTimeRecorder {
      */
     @Override
     public void prepareForShutdown() {
-        // We do not want to clode the file for System.out, so don't call super.
+        // We do not want to close the file for System.out, so don't call super.
     }
 
 }

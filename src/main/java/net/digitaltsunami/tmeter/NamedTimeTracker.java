@@ -71,10 +71,10 @@ import net.digitaltsunami.tmeter.record.TimeRecorder;
  * provides a rudimentary concurrent count for all timers recording the same
  * task - as determined by task name. The count is based on the number of
  * currently running tasks for a task name at the time the Timer was created.
- * 
- * 
+ *
+ *
  * @author dhagberg
- * 
+ *
  */
 public class NamedTimeTracker {
     /**
@@ -139,17 +139,17 @@ public class NamedTimeTracker {
      * timer levels are active by default.
      */
     private final TimerLevelCollection filter = new TimerLevelSet();
-    
+
     /**
-     * Manages post processing actions. 
+     * Manages post processing actions.
      */
     private final ActionChain actionChain = new ActionChain();
-    
+
     /**
      * Name used to refer to this time tracker instance.
      */
     private final String name;
-    
+
     /**
      * Create an instance of a named time tracker with the given name.
      * @param name Name to identify time tracker.
@@ -169,7 +169,7 @@ public class NamedTimeTracker {
      * If a timer level is provided, it will be checked against the current
      * filter. If not enabled, then an instance of {@link TimerShell} will be
      * returned.
-     * 
+     *
      * @param taskName
      *            Name used to represent a given task.
      * @param level
@@ -230,7 +230,7 @@ public class NamedTimeTracker {
      * <p>
      * If timing is disabled, an instance of {@link TimerShell} will be returned
      * so that the timing code can be left in place.
-     * 
+     *
      * @param taskName
      *            Name used to represent a given task.
      * @return instance of {@link Timer} configured based on current settings.
@@ -242,7 +242,7 @@ public class NamedTimeTracker {
 
     /**
      * Indicates whether or not we are keeping a list of all timers.
-     * 
+     *
      * @return the keepList
      */
     public boolean isKeepList() {
@@ -251,7 +251,7 @@ public class NamedTimeTracker {
 
     /**
      * Indicates whether or not we are keeping a list of all timers.
-     * 
+     *
      * @param keepList
      *            True to keep a list of timers, otherwise false.
      */
@@ -261,7 +261,7 @@ public class NamedTimeTracker {
 
     /**
      * Indicates whether or not we are keeping track of concurrent task count.
-     * 
+     *
      * @return the trackConcurrent
      */
     public boolean isTrackConcurrent() {
@@ -270,7 +270,7 @@ public class NamedTimeTracker {
 
     /**
      * Indicates whether or not we are keeping track of concurrent task count.
-     * 
+     *
      * @param trackConcurrent
      *            True to keep track of concurrent task count, otherwise false.
      */
@@ -283,7 +283,7 @@ public class NamedTimeTracker {
 
     /**
      * Decrement the concurrent count for the provided task name.
-     * 
+     *
      * @param taskName
      */
     private void decrementConcurrent(String taskName) {
@@ -306,9 +306,10 @@ public class NamedTimeTracker {
      * setting will be used to set the corresponding entry on each timer as it
      * is created. Changes to setting will affect only those timers created
      * after this invocation.
-     * 
-     * @param logType
-     *            type of logging to occur on timer completion.
+     *
+     * @param defaultTimeRecorder
+     *         the default {@link TimeRecorder} used to populate the corresponding
+     *         field when creating {@link Timer}s
      */
     public void setDefaultTimeRecorder(TimeRecorder defaultTimeRecorder) {
         this.defaultTimeRecorder = defaultTimeRecorder;
@@ -335,8 +336,8 @@ public class NamedTimeTracker {
     /**
      * Indicates if tracking is disabled. If so, a {@link TimerShell} will be
      * returned by {@link #startRecording(String)}.
-     * 
-     * @return
+     *
+     * @return true if tracking is disabled.
      */
     public boolean isTrackingDisabled() {
         return trackingDisabled;
@@ -366,12 +367,12 @@ public class NamedTimeTracker {
         listenForCompletion = false;
         // TODO: This needs to be moved somewhere.  Where?
         defaultTimeRecorder.prepareForShutdown();
-        
+
     }
 
     /**
      * Return the current post completion action processor.
-     * 
+     *
      * @return
      */
     public ActionChain getActionChain() {
@@ -397,7 +398,7 @@ public class NamedTimeTracker {
     /**
      * Add an action to the chain of actions that will be performed upon each
      * timer completion.
-     * 
+     *
      * @param action
      */
     public void addCompletionAction(TimerAction action) {
@@ -409,7 +410,7 @@ public class NamedTimeTracker {
      * Returns a copy of the current list of {@link Timer} entries. The copy is
      * a shallow copy; therefore, the instances may change after they are
      * returned. See {@link Timer} for a list of invariants.
-     * 
+     *
      * @return a snapshot of the current list of timers.
      */
     public Timer[] getCurrentTimers() {
@@ -419,7 +420,7 @@ public class NamedTimeTracker {
     /**
      * Enable a {@link TimerLevel} for recording. All subsequent timer requests
      * enabled for this level will start a timer recording.
-     * 
+     *
      * @param level
      *            to enable for recording.
      * @return timer level currently in filter if matches new level or null if
@@ -435,7 +436,7 @@ public class NamedTimeTracker {
     /**
      * Enable all provided {@link TimerLevel}s for recording. All subsequent
      * timer requests enabled for these levels will start a timer recording.
-     * 
+     *
      * @param levels
      *            to enable for recording.
      * @return
@@ -449,7 +450,7 @@ public class NamedTimeTracker {
     /**
      * Disable a {@link TimerLevel} for recording. Subsequent requests will not
      * be enabled for this level and recording will not be started.
-     * 
+     *
      * @param level
      *            to disable timer recording.
      * @return true if level matched an existing entry and was removed.
@@ -463,7 +464,7 @@ public class NamedTimeTracker {
     /**
      * Disable provided {@link TimerLevel}s for recording. Subsequent requests
      * will not be enabled for these levels and recording will not be started.
-     * 
+     *
      * @param levels
      *            to disable timer recording.
      * @return true if any level matched an existing entry and was removed.
@@ -484,7 +485,7 @@ public class NamedTimeTracker {
      * <p>
      * Note: This does non include timers with out a timer level as those are
      * not affected by the filter.
-     * 
+     *
      * @see TimerLevelCollection
      * @see #setTrackingDisabled(boolean)
      */
@@ -502,7 +503,7 @@ public class NamedTimeTracker {
 
     /**
      * Listener for timers being stopped.
-     * 
+     *
      * @author dhagberg
      */
     class TimerStoppedEventHandler implements TimerStoppedListener {
@@ -560,5 +561,5 @@ public class NamedTimeTracker {
         }
         return true;
     }
-        
+
 }

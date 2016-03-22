@@ -11,7 +11,6 @@ import net.digitaltsunami.tmeter.Timer;
 import net.digitaltsunami.tmeter.TimerBasicStatistics;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TimerStatsPublisherActionTest {
@@ -58,8 +57,8 @@ public class TimerStatsPublisherActionTest {
         t = new Timer(TEST_TIMER_2);
         t.stop();
         pubAction.timerComplete(t);
-        assertEquals("Publisher should have been called twice for timer2", 1, timerCounts.get(TEST_TIMER_2).get());
-        assertEquals("Publisher should have remaind unchanged for timer1", 2, timerCounts.get(TEST_TIMER_1).get());
+        assertEquals("Publisher should have been called once for timer2", 1, timerCounts.get(TEST_TIMER_2).get());
+        assertEquals("Publisher should have remained unchanged for timer1", 2, timerCounts.get(TEST_TIMER_1).get());
     }
 
     @Test
