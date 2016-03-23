@@ -24,7 +24,7 @@ public class KeyedTimerNotesTest extends TimerNotesTest {
 
     /**
      * Test method for
-     * {@link net.digitaltsunami.tmeter.TimerNoteList#TimerNotes(boolean, java.lang.Object[])}
+     * {@link net.digitaltsunami.tmeter.KeyedTimerNotes#KeyedTimerNotes(Object...)}
      * .
      */
     @Test
@@ -37,7 +37,7 @@ public class KeyedTimerNotesTest extends TimerNotesTest {
     
     /**
      * Test method for
-     * {@link net.digitaltsunami.tmeter.TimerNoteList#TimerNotes(boolean, java.lang.Object[])}
+     * {@link net.digitaltsunami.tmeter.KeyedTimerNotes#KeyedTimerNotes(Object...)}
      * .
      */
     @Test(expected=IllegalArgumentException.class)

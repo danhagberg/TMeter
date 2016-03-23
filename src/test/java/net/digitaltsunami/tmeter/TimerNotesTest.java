@@ -45,7 +45,7 @@ public abstract class TimerNotesTest {
 
     /**
      * Test method for
-     * {@link net.digitaltsunami.tmeter.TimerNotes#TimerNotes(boolean, java.lang.Object[])}
+     * {@link net.digitaltsunami.tmeter.TimerNoteList#TimerNoteList(Object...)}
      * .
      */
     @Test
@@ -63,7 +63,7 @@ public abstract class TimerNotesTest {
 
     /**
      * Test method for
-     * {@link net.digitaltsunami.tmeter.TimerNotes#TimerNotes(java.lang.Object[])}
+     * {@link net.digitaltsunami.tmeter.TimerNoteList#TimerNoteList(Object...)}
      * .
      */
     @Test

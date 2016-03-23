@@ -60,8 +60,6 @@ public class ActionChainTest {
      * Test method for
      * {@link net.digitaltsunami.tmeter.action.ActionChain#submitCompletedTimer(net.digitaltsunami.tmeter.Timer)}
      * .
-     * 
-     * @throws InterruptedException
      */
     @Test
     public void testSubmitCompletedTimer() throws InterruptedException {
@@ -76,7 +74,6 @@ public class ActionChainTest {
      * Test method for
      * {@link net.digitaltsunami.tmeter.action.ActionChain#clearActions()}.
      * 
-     * @throws InterruptedException
      */
     @Test
     public void testClearActions() throws InterruptedException {
@@ -96,8 +93,6 @@ public class ActionChainTest {
      * Test method for
      * {@link net.digitaltsunami.tmeter.action.ActionChain#addAction(net.digitaltsunami.tmeter.action.TimerAction)}
      * .
-     * 
-     * @throws InterruptedException
      */
     @Test
     public void testAddAction() throws InterruptedException {
@@ -115,8 +110,6 @@ public class ActionChainTest {
      * Test method for
      * {@link net.digitaltsunami.tmeter.action.ActionChain#addAction(net.digitaltsunami.tmeter.action.TimerAction)}
      * .
-     * 
-     * @throws InterruptedException
      */
     @Test
     public void testAddActionAfterClear() throws InterruptedException {
@@ -175,7 +168,6 @@ public class ActionChainTest {
      * Test method for
      * {@link net.digitaltsunami.tmeter.action.ActionChain#reset()}.
      * 
-     * @throws InterruptedException
      */
     @Test
     public void testReset() throws InterruptedException {

@@ -31,6 +31,7 @@ import net.digitaltsunami.tmeter.action.TimerAction;
 import net.digitaltsunami.tmeter.record.ConsoleTimeRecorder;
 import net.digitaltsunami.tmeter.record.NullTimeRecorder;
 
+import net.digitaltsunami.tmeter.record.TimeRecorder;
 import org.junit.Test;
 
 /**
@@ -84,10 +85,6 @@ public class TimeTrackerTest {
         TimeTracker.setTrackConcurrent(false);
     }
 
-    /**
-     * Test method for
-     * {@link net.digitaltsunami.tmeter.TimeTracker#decrementConcurrent(java.lang.String)}
-     */
     @Test
     public void testDecrementConcurrent() {
         TimeTracker.setTrackConcurrent(true);
@@ -105,7 +102,6 @@ public class TimeTrackerTest {
 
     /**
      * Test method for
-     * {@link net.digitaltsunami.tmeter.TimeTracker#getLogType()} and
      * {@link net.digitaltsunami.tmeter.TimeTracker#setDefaultTimeRecorder(TimeRecorder)}
      * .
      */

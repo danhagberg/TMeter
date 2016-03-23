@@ -31,6 +31,7 @@ import net.digitaltsunami.tmeter.action.TimerAction;
 import net.digitaltsunami.tmeter.record.ConsoleTimeRecorder;
 import net.digitaltsunami.tmeter.record.NullTimeRecorder;
 
+import net.digitaltsunami.tmeter.record.TimeRecorder;
 import org.junit.Test;
 
 /**
@@ -106,7 +107,6 @@ public class NamedTimeTrackerTest {
 
     /**
      * Test method for
-     * {@link net.digitaltsunami.tmeter.NamedTimeTracker#getLogType()} and
      * {@link net.digitaltsunami.tmeter.NamedTimeTracker#setDefaultTimeRecorder(TimeRecorder)}
      * .
      */

@@ -27,10 +27,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import net.digitaltsunami.tmeter.Timer.TimerStatus;
+import net.digitaltsunami.tmeter.level.TimerLevel;
 import net.digitaltsunami.tmeter.level.TimerThreshold;
 import net.digitaltsunami.tmeter.record.ConsoleTimeRecorder;
 import net.digitaltsunami.tmeter.record.NullTimeRecorder;
 
+import net.digitaltsunami.tmeter.record.TimeRecorder;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -67,7 +69,7 @@ public class TimerTest {
 
     /**
      * Test method for
-     * {@link net.digitaltsunami.tmeter.Timer#Timer(java.lang.String, boolean)}
+     * {@link net.digitaltsunami.tmeter.Timer#Timer(String, boolean, TimeRecorder)}
      * .
      */
     @Test
@@ -90,7 +92,7 @@ public class TimerTest {
 
     /**
      * Test method for
-     * {@link net.digitaltsunami.tmeter.Timer#Timer(java.lang.String, boolean)}
+     * {@link net.digitaltsunami.tmeter.Timer#Timer(String, boolean, TimerLevel)}
      * .
      */
     @Test
@@ -152,7 +154,7 @@ public class TimerTest {
     }
 
     /**
-     * Test method for {@link Timer#stop(boolean, Object...)}
+     * Test method for {@link Timer#stop(Boolean, Object...)}
      */
     @Test
     public void testStopWithKeyedNotes() {
