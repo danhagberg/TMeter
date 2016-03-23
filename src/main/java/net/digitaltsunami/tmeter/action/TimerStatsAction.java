@@ -68,7 +68,7 @@ public class TimerStatsAction extends TimerAction {
     /**
      * Clears all accumulated statistics.
      * 
-     * @see net.digitaltsunami.tmeter.TimeAction#reset()
+     * @see net.digitaltsunami.tmeter.action.TimerAction#reset()
      */
     @Override
     protected void reset() {

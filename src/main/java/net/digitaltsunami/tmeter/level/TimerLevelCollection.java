@@ -29,7 +29,7 @@ import java.util.Set;
  * Example: Given another Threshold timer level with: SEVERE, WARN, and INFO. If
  * the set contained WARN and HIGH was added, no change to WARN would occur.
  * Both HIGH and WARN would both exist in the set.
- * <li> {@link TimerLevelType#SET}</li> All timer levels within the set will be
+ * <li> {@link TimerLevelType#SET} All timer levels within the set will be
  * extracted and processed according to the rules applied to individual timer
  * levels.
  * </ul>
@@ -60,7 +60,7 @@ public interface TimerLevelCollection extends TimerLevel {
      * <p>
      * Threshold levels are compared only against those of the same type.
      * Another Threshold type level will not be effected by this addition.
-     * <li> {@link TimerLevelType#SET}</li> All timer levels within the set will
+     * <li> {@link TimerLevelType#SET} All timer levels within the set will
      * be extracted and processed according to the rules applied to individual
      * timer levels.
      * </ul>

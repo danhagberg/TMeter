@@ -20,14 +20,14 @@ import net.digitaltsunami.tmeter.record.TimeRecorder;
  * {@link TimeRecorderAction} and performs all recording on a separate thread.
  * <ol>
  * <li>Create an instance of {@link QueuedTimeRecorder}
- * <li>Set the {@link TimeTracker#setDefaultTimeRecorder(queuedTimeRecorder)}
+ * <li>Set the {@link TimeTracker#setDefaultTimeRecorder(TimeRecorder)}
  * </ol>
  * <li>As part of an action chain
  * <ol>
  * <li>Create an instance of this class with an implementation of
  * {@link TimeRecorder}
  * <li>Add the instance to the TimeTracker action chain using
- * {@link TimeTracker#addAction(TimerAction)}
+ * {@link TimeTracker#addCompletionAction(TimerAction)}
  * <li>If the processing threads should not record the timers, then set the default time 
  * recorder for TimeTracker to {@link NullTimeRecorder}
  * using {@link TimeTracker#setDefaultTimeRecorder(TimeRecorder)}.

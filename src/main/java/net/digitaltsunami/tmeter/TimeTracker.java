@@ -90,8 +90,6 @@ public class TimeTracker {
      *            Name of time tracker instance to retrieve.
      * @return instance of {@link NamedTimeTracker} stored under the name
      *         provided.
-     * 
-     * @ThreadSafe
      */
     public static NamedTimeTracker named(String name) {
         NamedTimeTracker tracker = timeTrackers.get(name);
@@ -203,8 +201,8 @@ public class TimeTracker {
      * is created. Changes to setting will affect only those timers created
      * after this invocation.
      * 
-     * @param logType
-     *            type of logging to occur on timer completion.
+     * @param defaultTimeRecorder the default {@link TimeRecorder} used to populate
+     *                            the corresponding field when creating {@link Timer}s
      */
     public static void setDefaultTimeRecorder(TimeRecorder defaultTimeRecorder) {
         common.setDefaultTimeRecorder(defaultTimeRecorder);
@@ -331,7 +329,6 @@ public class TimeTracker {
      * 
      * @param levels
      *            to enable for recording.
-     * @return
      * @see TimerLevelCollection
      * @see #setTrackingDisabled(boolean)
      */

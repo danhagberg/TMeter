@@ -9,11 +9,11 @@ package net.digitaltsunami.tmeter.level;
  * If a {@link CategoryTimerLevel} is created by using
  * 
  * <pre>
- * <code>
+ * {@code
  *     enum TLevel {MAIN,DETAIL;}
  *     public static final TimerLevel MAIN = new CategoryTimerLevel<TLevel>(TLevel.MAIN);
  *     public static final TimerLevel DETAIL = new CategoryTimerLevel<TLevel>(TLevel.DETAIL);
- * </code>
+ * }
  * </pre>
  * 
  * Usage:
@@ -30,12 +30,12 @@ package net.digitaltsunami.tmeter.level;
  * this CategoryTimerLevel to provide the implementation.
  * 
  * <pre>
- * <code>
+ * {@code
  *  public enum TrackLevel implements TimerLevel {
  *      MAIN(),
  *      DETAIL();
  * 
- *      CategoryTimerLevel<TrackLevel> timerLevel;
+ *      CategoryTimerLevel<TrackLevel> timerLevel/
  * 
  *      TrackLevel() { timerLevel = new CategoryTimerLevel<TrackLevel>(this); }
  *      public boolean isEnabled(TimerLevel level) { return timerLevel.isEnabled(level); }
@@ -43,7 +43,7 @@ package net.digitaltsunami.tmeter.level;
  *      public TimerLevelType getLevelType() { return timerLevel.getLevelType(); }
  *      public Object getGroup() { return timerLevel.getGroup(); }
  *  }
- * </code>
+ *  }
  * </pre>
  * 
  * Usage:

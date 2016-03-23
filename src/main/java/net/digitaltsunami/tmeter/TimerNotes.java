@@ -33,11 +33,10 @@ public interface TimerNotes {
 	 * Comparison of key values is not case sensitive. Case should not be used
 	 * to distinguish keys with timer notes.
 	 * <p>
-	 * If keyed access was not used to store the values by using
-	 * {@link #TimerNotes(boolean, Object[])}, an {@link IllegalStateException}
-	 * will be thrown.
+	 * If keyed access was not used to store the values,
+	 * an {@link IllegalStateException} will be thrown.
 	 * 
-	 * @param key
+	 * @param key case insensitive value used to locate note value.
 	 * @return String representation of value stored at index. <code>Null</code>
 	 *         values will be returned as "null"
 	 * @throws IllegalStateException
@@ -62,10 +61,9 @@ public interface TimerNotes {
 	 * Comparison of key values is not case sensitive. Case should not be used
 	 * to distinguish keys with timer notes.
 	 * <p>
-	 * If keyed access was not used to store the values by using
-	 * {@link #TimerNotes(boolean, Object[])}, an {@link IllegalStateException}
-	 * will be thrown.
-	 * 
+	 * If keyed access was not used to store the values,
+	 * an {@link IllegalStateException} will be thrown.
+	 *
 	 * @param key
 	 *            case insensitive value used to locate note value.
 	 * @return Value for key or null if not found.
@@ -91,7 +89,7 @@ public interface TimerNotes {
 	 * retrieval for subsequent timers providing that the values were added in
 	 * the same manner.
 	 * 
-	 * @param Key
+	 * @param key
 	 *            used to query for index value.
 	 * @return index for key if found, otherwise -1.
 	 */
@@ -133,17 +131,6 @@ public interface TimerNotes {
 	 * {@link #NOTE_DELIMITER}. If the values are keyed, then each value will be
 	 * preceded by the key and a delimiter of {@link #KEY_VALUE_DELIMITER}.
 	 * 
-	 * @param notes
-	 *            Single string value containing notes delimited by the
-	 *            applicable character values.
-	 * @param noteDelimiter
-	 *            character value used to delimit note values within provided
-	 *            notes string.
-	 * @param keyValueDelimiter
-	 *            character value used to delimit key and value within each note
-	 *            extracted from the notes parameter. A value should be selected
-	 *            that is not present in either the keys or values for the given
-	 *            notes.
 	 * @return Single string representation of the notes contained within this
 	 *         instance.
 	 */

@@ -55,6 +55,7 @@ import net.digitaltsunami.tmeter.TimerShell;
  * <p>
  verify that this is correct with both return from main and system.exit
  * Shutdown types and corresponding actions are:
+ * <ul>
  * <li> {@link ActionChainShutdownType#TERMINATE_AFTER_COMPLETION}: The thread
  * will attempt to clear its queue prior to exit.
  * <li> {@link ActionChainShutdownType#TERMINATE_MANUALLY}: The action chain will
@@ -67,6 +68,7 @@ import net.digitaltsunami.tmeter.TimerShell;
  * <li> {@link ActionChainShutdownType#TERMINATE_IMMEDIATELY}: The thread will
  * terminate immediately and will not complete processing. This includes actions
  * in mid processing.
+ * </ul>
  * <p>
  * 
  * @author dhagberg

@@ -1,6 +1,5 @@
 package net.digitaltsunami.tmeter.level;
 
-import net.digitaltsunami.tmeter.TimeTracker;
 
 /**
  * {@link TimerLevel} representing a {@link TimerLevelType#CATEGORY} type backed
@@ -11,12 +10,12 @@ import net.digitaltsunami.tmeter.TimeTracker;
  * PROFILE. If a {@link CategoryTimerLevel} is created by using
  * 
  * <pre>
- * <code>
+ * {@code
  *     enum SessionOps {LOGIN,LOGOUT,PROFILE;}
  *     public static final TimerLevel LOGIN = new CategoryTimerLevel<SessionOps>(SessionOps.LOGIN);
  *     public static final TimerLevel LOGOUT = new CategoryTimerLevel<SessionOps>(SessionOps.LOGOUT);
  *     public static final TimerLevel PROFILE = new CategoryTimerLevel<SessionOps>(SessionOps.PROFILE);
- * </code>
+ * }
  * </pre>
  * 
  * Usage:
@@ -32,7 +31,7 @@ import net.digitaltsunami.tmeter.TimeTracker;
  * this CategoryTimerLevel to provide the implementation.
  * 
  * <pre>
- * <code>
+ * {@code
  *  public enum UserOps implements TimerLevel {
  *      LOGIN(),
  *      LOGOUT(),
@@ -46,7 +45,7 @@ import net.digitaltsunami.tmeter.TimeTracker;
  *      public TimerLevelType getLevelType() { return timerLevel.getLevelType(); }
  *      public Object getGroup() { return timerLevel.getGroup(); }
  *  }
- * </code>
+ * }
  * </pre>
  * 
  * Usage:

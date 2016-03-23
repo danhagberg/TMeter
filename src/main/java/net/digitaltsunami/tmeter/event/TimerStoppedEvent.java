@@ -26,7 +26,7 @@ public class TimerStoppedEvent extends EventObject {
     /**
      * Construct a completion event providing the timer that has completed.
      * 
-     * @param source
+     * @param timer subject of stopped event/jlkjlk
      */
     public TimerStoppedEvent(Timer timer) {
         super(timer);

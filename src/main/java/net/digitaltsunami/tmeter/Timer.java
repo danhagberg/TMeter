@@ -102,8 +102,6 @@ import net.digitaltsunami.tmeter.record.TimeRecorder;
  * </pre>
  * 
  * 
- * @NotThreadSafe
- * 
  * @author dhagberg
  * 
  */
@@ -118,7 +116,7 @@ public class Timer implements Serializable {
      * Wall clock start time for task. Time is recorded in milliseconds
      * (1.0E-3).
      * 
-     * @see {@link System#currentTimeMillis()}
+     * @see System#currentTimeMillis()
      */
     private long startTimeMillis;
     /**
@@ -126,7 +124,7 @@ public class Timer implements Serializable {
      * represent wall clock time, but is used to measure elapsed time. Provides
      * nanosecond precision, but not accuracy.
      * 
-     * @see {@link System#nanoTime()}
+     * @see System#nanoTime()
      */
     private long startTimeNanos;
     /**
@@ -134,7 +132,7 @@ public class Timer implements Serializable {
      * represent wall clock time, but is used to measure elapsed time. Provides
      * nanosecond precision, but not accuracy.
      * 
-     * @see {@link System#nanoTime()}
+     * @see System#nanoTime()
      */
     private long stopTimeNanos;
     /**
@@ -390,7 +388,8 @@ public class Timer implements Serializable {
      * See {@link TimeRecorder} for more information. Has no effect after the
      * timer has been stopped.
      * 
-     * @param logType
+     * @param timeRecorder recorder that will be invoked upon completion of this timer.
+     *                     If null, the timer will not be recorded.
      */
     public void setTimeRecorder(TimeRecorder timeRecorder) {
         this.timeRecorder = timeRecorder;

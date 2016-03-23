@@ -13,9 +13,9 @@ public class TimerNotesParser {
 	 * Parse a {@link String} representation of a {@link KeyedTimerNotes}
 	 * instance and return a new instance with the values set as appropriate.
 	 * <p>
-	 * Each of the notes must be delimited by {@link #NOTE_DELIMITER}. Notes may
+	 * Each of the notes must be delimited by {@link TimerNotes#NOTE_DELIMITER}. Notes may
 	 * be keyed or non-keyed. If keyed, each note must be delimited by
-	 * {@link #KEY_VALUE_DELIMITER}.
+	 * {@link TimerNotes#KEY_VALUE_DELIMITER}.
 	 * 
 	 * @param notes
 	 *            Single string value containing notes delimited by the
@@ -33,7 +33,7 @@ public class TimerNotesParser {
 	 * <p>
 	 * Each of the notes must be delimited by the provided noteDelimiter value.
 	 * Notes may be keyed or non-keyed. If keyed, each note must be delimited by
-	 * {@link #KEY_VALUE_DELIMITER}.
+	 * {@link TimerNotes#KEY_VALUE_DELIMITER}.
 	 * 
 	 * @param notes
 	 *            Single string value containing notes delimited by the

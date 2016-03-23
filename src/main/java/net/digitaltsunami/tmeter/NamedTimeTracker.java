@@ -186,7 +186,7 @@ public class NamedTimeTracker {
         }
 
         // If a level was not provided, then skip over filtering for this timer,
-        // otherwise ensure that the level active.
+        // otherwise ensure that the level is active.
         if (level != DEFAULT_LEVEL) {
             if (!filter.isEnabled(level)) {
                 return dummy;
@@ -439,7 +439,6 @@ public class NamedTimeTracker {
      *
      * @param levels
      *            to enable for recording.
-     * @return
      * @see TimerLevelCollection
      * @see #setTrackingDisabled(boolean)
      */

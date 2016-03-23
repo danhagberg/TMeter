@@ -29,7 +29,7 @@ import java.io.Serializable;
  * TimerNotes may be persisted for later retrieval using serialization or by
  * converting the notes to a single {@link String} value using
  * {@link #toSingleValue()}. This value can be used to recreate the TimerNotes
- * instance using {@link #parse(String)}.
+ * instance using {@link TimerNotesParser#parse(String)}.
  * 
  * @author dhagberg
  * 
@@ -46,9 +46,6 @@ public class KeyedTimerNotes implements Serializable, TimerNotes {
      * future retrieval. If keyed is true, the notes must be in key/value pairs
      * (.e.g., key1, value1, key2, value2 ...).
      * 
-     * @param keyed
-     *            true if notes are provided as key/value pairs, false if all
-     *            notes are values.
      * @param notes
      *            list of either key/value pairs or values.
      */

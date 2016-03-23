@@ -16,7 +16,6 @@ __copyright_end__ */
 package net.digitaltsunami.tmeter;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * Structure to append domain specific notes to {@link Timer} recordings.
@@ -30,7 +29,7 @@ import java.util.Arrays;
  * TimerNotes may be persisted for later retrieval using serialization or by
  * converting the notes to a single {@link String} value using
  * {@link #toSingleValue()}. This value can be used to recreate the TimerNotes
- * instance using {@link #parse(String)}.
+ * instance using {@link TimerNotesParser#parse(String)}.
  * 
  * @author dhagberg
  * 
